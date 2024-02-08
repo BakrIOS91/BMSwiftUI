@@ -8,7 +8,9 @@
 import Foundation
 import SwiftUI
 
+/// An extension to `Locale` providing additional functionality.
 public extension Locale {
+    /// An enumeration representing supported locales.
     enum SupportedLocale: String {
         // Arabic
         case ar = "ar"
@@ -84,11 +86,13 @@ public extension Locale {
         case zh_HK = "zh_HK" // Chinese (Hong Kong)
         case zh_TW = "zh_TW" // Chinese (Taiwan)
         
+        /// Returns the `Locale` object corresponding to the supported locale.
         var locale: Locale {
             return Locale(identifier: self.rawValue)
         }
     }
     
+    /// Returns the best matching locale based on the preferred localizations of the main bundle.
     static var bestMatching: Locale {
         if let identifier = Bundle.main.preferredLocalizations.first,
            let supportedLocale = SupportedLocale(rawValue: identifier.lowercased()){
@@ -98,11 +102,16 @@ public extension Locale {
         }
     }
     
+    /// Returns the code of the best matching supported locale.
     static var supportedLocaleCode: String? {
         let bestMatchingIdentifier = Locale.bestMatching.identifier
         return SupportedLocale(rawValue: bestMatchingIdentifier)?.rawValue
     }
     
+    // Determines if the given supported locale represents a right-to-left language.
+    ///
+    /// - Parameter locale: The supported locale.
+    /// - Returns: `true` if the locale represents a right-to-left language; otherwise, `false`.
     static func isRTL(locale: SupportedLocale) -> Bool {
         switch locale {
             case .ar, .ar_AE, .ar_BH, .ar_DZ, .ar_EG, .ar_IQ, .ar_JO, .ar_KW, .ar_LB, .ar_LY, .ar_MA, .ar_OM, .ar_QA, .ar_SA, .ar_SD, .ar_SY, .ar_TN, .ar_YE:
@@ -112,6 +121,7 @@ public extension Locale {
         }
     }
     
+    /// Returns the layout direction based on the locale.
     var layoutDirection: LayoutDirection {
         return Locale.isRTL(locale: SupportedLocale(rawValue: identifier.lowercased()) ?? .en)
         ? .rightToLeft
