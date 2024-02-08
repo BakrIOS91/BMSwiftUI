@@ -5,11 +5,18 @@ import PackageDescription
 
 let package = Package(
     name: "BMSwiftUI",
+    platforms: [
+        .iOS(.v13),
+        .macOS(.v10_15),
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "BMSwiftUI",
             targets: ["BMSwiftUI"]),
+    ],
+    dependencies: [
+        // Add your dependencies here
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
