@@ -11,7 +11,7 @@ import SwiftUI
 /// An extension to `Locale` providing additional functionality.
 public extension Locale {
     /// An enumeration representing supported locales.
-    enum SupportedLocale: String {
+   public enum SupportedLocale: String {
         // Arabic
         case ar = "ar"
         case ar_AE = "ar_AE" // Arabic (United Arab Emirates)
@@ -87,7 +87,7 @@ public extension Locale {
         case zh_TW = "zh_TW" // Chinese (Taiwan)
         
         /// Returns the `Locale` object corresponding to the supported locale.
-        var locale: Locale {
+       public var locale: Locale {
             return Locale(identifier: self.rawValue)
         }
     }
