@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Double {
+public extension Double {
     /// Rounds the double to decimal places value
     func toStringRounded(toPlaces places: Int) -> String {
         return String(format: "%.\(places)f", self)
