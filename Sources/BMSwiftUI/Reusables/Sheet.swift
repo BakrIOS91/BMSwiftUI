@@ -37,7 +37,7 @@ struct Sheet<ContentView: View>: ViewModifier {
                     }
                 }
                 .isHidden(!showsContent)
-                .ignoresSafeArea()
+                .edgesIgnoringSafeArea(.bottom)
                 .readSize { contentSize = $0 }
             
             VStack {
