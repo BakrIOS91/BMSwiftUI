@@ -55,7 +55,7 @@ struct Sheet<ContentView: View>: ViewModifier {
     }
 }
 
-extension View {
+public extension View {
     
     func contentSheet<Item, Destination: View>(
         item: Binding<Item?>,
