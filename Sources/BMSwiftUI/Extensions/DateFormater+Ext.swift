@@ -20,6 +20,7 @@ public extension DateFormatter {
         case yyyyMMddTHHmmssZ = "yyyy-MM-dd'T'HH:mm:ssZ"
         case yyyyMMddTHHmmssSSS = "yyyy-MM-dd'T'HH:mm:ss.SSS"
         case yyyyMMddTHHmmssSSSZ = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        case yyyyMMddTHHmmssSSSZz = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         case yyyyMMddTHHmmss = "yyyy-MM-dd'T'HH:mm:ss"
         case yyyyMMddhhmma = "yyyy-MM-dd hh:mm a"
         case yyyyMMddhhmmss = "yyyy-MM-dd HH:mm:ss"
