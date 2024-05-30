@@ -5,6 +5,9 @@
 //  Created by Bakr mohamed on 03/04/2023.
 //
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public extension View {
     #if canImport(UIKit)

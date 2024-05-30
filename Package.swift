@@ -22,7 +22,13 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "BMSwiftUI"),
+            name: "BMSwiftUI",
+            dependencies: [],
+            path: "Sources",
+            swiftSettings: [
+                .define("SPM")
+            ]
+        ),
         .testTarget(
             name: "BMSwiftUITests",
             dependencies: ["BMSwiftUI"]),
