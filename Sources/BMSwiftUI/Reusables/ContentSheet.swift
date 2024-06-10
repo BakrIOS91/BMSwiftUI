@@ -46,13 +46,14 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
                 debugPrint("Presenting the sheet.")
                 uiViewController.present(hostingController, animated: true, completion: nil)
             }
-        } else {
-            if let presentedViewController = uiViewController.presentedViewController,
-               presentedViewController is TransparentHostingController<Content>{
-                // Dismiss only the TransparentHostingController
-                presentedViewController.dismiss(animated: true, completion: nil)
-            }
         }
+//        else {
+//            if let presentedViewController = uiViewController.presentedViewController,
+//               presentedViewController is TransparentHostingController<Content>{
+//                // Dismiss only the TransparentHostingController
+//                presentedViewController.dismiss(animated: true, completion: nil)
+//            }
+//        }
     }
 }
 
