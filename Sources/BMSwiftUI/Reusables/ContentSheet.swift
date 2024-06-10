@@ -36,14 +36,24 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
     
     // Update the UIViewController based on the isPresented state
     public func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        if isPresented, uiViewController.presentedViewController == nil {
-            // If the sheet should be presented and no sheet is currently presented
-            let hostingController = TransparentHostingController(rootView: content)
-            hostingController.modalPresentationStyle = .overCurrentContext
-            uiViewController.present(hostingController, animated: true, completion: nil)
-        } else if !isPresented, let presentedViewController = uiViewController.presentedViewController {
-            // If the sheet should be dismissed and a sheet is currently presented
-            presentedViewController.dismiss(animated: true, completion: nil)
+        if isPresented {
+            if uiViewController.presentedViewController == nil {
+                // If the sheet should be presented and no sheet is currently presented
+                let hostingController = TransparentHostingController(rootView: content)
+                hostingController.modalPresentationStyle = .overCurrentContext
+                hostingController.presentationController?.delegate = context.coordinator
+                
+                // Debug statements to trace the presentation flow
+                print("Presenting the sheet.")
+                uiViewController.present(hostingController, animated: true, completion: nil)
+            }
+        } else {
+            if let presentedViewController = uiViewController.presentedViewController {
+                // If the sheet should be dismissed and a sheet is currently presented
+                // Debug statements to trace the dismissal flow
+                print("Dismissing the sheet.")
+                presentedViewController.dismiss(animated: true, completion: nil)
+            }
         }
     }
 }
