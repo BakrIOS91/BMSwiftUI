@@ -71,10 +71,9 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
                 uiViewController.present(hostingController, animated: true, completion: nil)
             }
         } else {
-            if let presentedViewController = uiViewController.presentedViewController {
-                // If the sheet should be dismissed and a sheet is currently presented
-                // Debug statements to trace the dismissal flow
-                debugPrint("Dismissing the sheet.")
+            if let presentedViewController = uiViewController.presentedViewController,
+               presentedViewController is TransparentHostingController<Content> {
+                // Dismiss only the TransparentHostingController
                 presentedViewController.dismiss(animated: true, completion: nil)
             }
         }
