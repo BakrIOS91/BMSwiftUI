@@ -24,39 +24,63 @@ public class TransparentHostingController<Content: View>: UIHostingController<Co
     }
 }
 
-// A UIViewControllerRepresentable to wrap a SwiftUI view in a transparent sheet
+/// A UIViewControllerRepresentable to wrap a SwiftUI view in a transparent sheet
 public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
-    @Binding public var isPresented: Bool  // Binding to control the presentation state
-    public let content: Content  // The content to be presented in the sheet
+    /// Binding to control the presentation state
+    @Binding public var isPresented: Bool
+    /// The content to be presented in the sheet
+    public let content: Content
     
-    // Create the initial UIViewController
-    public func makeUIViewController(context: Context) -> UIViewController {
-        UIViewController()  // Return a plain UIViewController
+    /// Coordinator class to manage the presentation controller delegate
+    public class Coordinator: NSObject, UIAdaptivePresentationControllerDelegate {
+        var parent: TransparentSheet
+        
+        init(parent: TransparentSheet) {
+            self.parent = parent
+        }
+        
+        /// Called when the presentation controller did dismiss
+        public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+            parent.isPresented = false
+        }
     }
     
-    // Update the UIViewController based on the isPresented state
+    /// Creates a coordinator instance for this representable
+    public func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+    
+    /// Creates the initial view controller to be presented
+    public func makeUIViewController(context: Context) -> UIViewController {
+        let viewController = UIViewController()
+        viewController.view.backgroundColor = .clear  // Ensure background is transparent
+        return viewController
+    }
+    
+    /// Updates the presented view controller based on changes in the presentation state
     public func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
         if isPresented {
             if uiViewController.presentedViewController == nil {
                 // If the sheet should be presented and no sheet is currently presented
                 let hostingController = TransparentHostingController(rootView: content)
                 hostingController.modalPresentationStyle = .overCurrentContext
-                hostingController.presentationController?.delegate = context.coordinator
+                hostingController.presentationController?.delegate = context.coordinator  // Correctly assigning the delegate
                 
                 // Debug statements to trace the presentation flow
-                print("Presenting the sheet.")
+                debugPrint("Presenting the sheet.")
                 uiViewController.present(hostingController, animated: true, completion: nil)
             }
         } else {
             if let presentedViewController = uiViewController.presentedViewController {
                 // If the sheet should be dismissed and a sheet is currently presented
                 // Debug statements to trace the dismissal flow
-                print("Dismissing the sheet.")
+                debugPrint("Dismissing the sheet.")
                 presentedViewController.dismiss(animated: true, completion: nil)
             }
         }
     }
 }
+
 
 // Extension on View to add a method for presenting content sheets
 public extension View {
