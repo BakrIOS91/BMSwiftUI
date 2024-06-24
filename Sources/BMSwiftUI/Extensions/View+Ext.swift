@@ -178,6 +178,7 @@ public extension View {
             .onPreferenceChange(FramePreferenceKey.self, perform: onChange)
     }
     
+    #if os(iOS)
     func cornerRadius(
         _ radius: CGFloat,
         corners: UIRectCorner
@@ -192,7 +193,9 @@ public extension View {
     func flippedHorizontally() -> some View {
         self.rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
     }
+    #endif
     
+    #if os(iOS)
     /// Sets navigation bar style when view appers
     ///
     /// - Warning:
@@ -216,8 +219,11 @@ public extension View {
             )
         )
     }
+    #endif
+
 }
 
+#if os(iOS)
 private struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
     var corners: UIRectCorner = .allCorners
@@ -229,6 +235,7 @@ private struct RoundedCorner: Shape {
         return Path(path.cgPath)
     }
 }
+#endif
 
 private struct SizePreferenceKey: PreferenceKey {
   static var defaultValue: CGSize = .zero

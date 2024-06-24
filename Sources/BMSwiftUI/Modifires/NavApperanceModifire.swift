@@ -5,6 +5,7 @@
 //  Created by Bakr mohamed on 29/05/2023.
 //
 
+#if os(iOS)
 import SwiftUI
 
 // MARK: - NavigationConfigurator
@@ -141,3 +142,4 @@ struct NavAppearanceModifier: ViewModifier {
     }
 }
 
+#endif

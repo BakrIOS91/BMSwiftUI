@@ -4,11 +4,9 @@
 //
 //  Created by Bakr mohamed on 29/05/2024.
 //
-
+#if os(iOS)
 import SwiftUI
-#if canImport(UIKit)
 import UIKit
-#endif
 // Enum to represent the style of the sheet background
 public enum SheetBackgroundStyle {
     case `default`  // Default style with a semi-transparent background
@@ -241,3 +239,4 @@ public struct SheetContainerView<Content: View>: View {
         .edgesIgnoringSafeArea(.bottom)  // Ignore safe area at the bottom
     }
 }
+#endif
