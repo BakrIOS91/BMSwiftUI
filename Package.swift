@@ -26,7 +26,8 @@ let package = Package(
             dependencies: [],
             path: "Sources",
             swiftSettings: [
-                .define("SPM")
+                .define("SPM"),
+                .unsafeFlags(["-cross-module-optimization"])
             ]
         ),
         .testTarget(
