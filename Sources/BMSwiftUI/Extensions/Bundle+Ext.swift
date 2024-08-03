@@ -27,6 +27,7 @@ public final class BundleExtension: Bundle {
         let localizedString = bundle.localizedString(forKey: key, value: value, table: tableName)
         
         // Debug print
+        print("Localized String: \(localizedString) for key: \(key)")
         return localizedString
     }
 }
@@ -34,7 +35,7 @@ public final class BundleExtension: Bundle {
 public extension Bundle {
     static private var appLanguageDefaultsKey: String = "kAppLanguage"
     static private var bundleType: String = "lproj"
-
+    
     /// Override the main bundle class (once in the app life) to make the new localizedString function work
     static let onceAction: Void = {
         object_setClass(Bundle.main, BundleExtension.self)
@@ -46,6 +47,7 @@ public extension Bundle {
         UserDefaults.standard.synchronize()
         
         guard let path = Bundle.main.path(forResource: language, ofType: bundleType) else {
+            print("Failed to find path for resource: \(language).\(bundleType)")
             return
         }
         
@@ -54,13 +56,14 @@ public extension Bundle {
             
             // Debug: List files in the bundle path
             do {
-                _ = try FileManager.default.contentsOfDirectory(atPath: path)
+                let files = try FileManager.default.contentsOfDirectory(atPath: path)
+                print("Files in bundle path: \(files)")
             } catch {
-                NSLog("Failed to list files in bundle path: \(error)")
+                print("Failed to list files in bundle path: \(error)")
             }
             
         } else {
-            NSLog("Failed to create bundle for path: \(path)")
+            print("Failed to create bundle for path: \(path)")
         }
     }
 }
