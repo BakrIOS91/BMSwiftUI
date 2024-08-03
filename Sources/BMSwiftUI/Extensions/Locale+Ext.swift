@@ -102,29 +102,23 @@ public extension Locale {
         }
     }
     
-    /// Returns the code of the best matching supported locale.
-    static var supportedLocaleCode: String? {
-        let bestMatchingIdentifier = Locale.bestMatching.identifier
-        return SupportedLocale(rawValue: bestMatchingIdentifier)?.rawValue
-    }
-    
-    // Determines if the given supported locale represents a right-to-left language.
+    /// Determines if the given locale represents a right-to-left language.
     ///
     /// - Parameter locale: The supported locale.
     /// - Returns: `true` if the locale represents a right-to-left language; otherwise, `false`.
-    static func isRTL(locale: SupportedLocale) -> Bool {
-        switch locale {
-            case .ar, .ar_AE, .ar_BH, .ar_DZ, .ar_EG, .ar_IQ, .ar_JO, .ar_KW, .ar_LB, .ar_LY, .ar_MA, .ar_OM, .ar_QA, .ar_SA, .ar_SD, .ar_SY, .ar_TN, .ar_YE:
-                return true
-            default:
-                return false
+    static func isRTL(locale: Locale) -> Bool {
+        let rtlLocales: [SupportedLocale] = [
+            .ar, .ar_AE, .ar_BH, .ar_DZ, .ar_EG, .ar_IQ, .ar_JO, .ar_KW, .ar_LB, .ar_LY,
+            .ar_MA, .ar_OM, .ar_QA, .ar_SA, .ar_SD, .ar_SY, .ar_TN, .ar_YE
+        ]
+        if let supportedLocale = SupportedLocale(rawValue: locale.identifier) {
+            return rtlLocales.contains(supportedLocale)
         }
+        return false
     }
     
     /// Returns the layout direction based on the locale.
     var layoutDirection: LayoutDirection {
-        return Locale.isRTL(locale: SupportedLocale(rawValue: identifier.lowercased()) ?? .en)
-        ? .rightToLeft
-        : .leftToRight
+        return Locale.isRTL(locale: self) ? .rightToLeft : .leftToRight
     }
 }
