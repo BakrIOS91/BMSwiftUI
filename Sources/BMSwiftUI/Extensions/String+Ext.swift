@@ -91,4 +91,12 @@ public extension String {
         
         return self
     }
+    
+    func toDouble() -> Double? {
+        return Double(self)
+    }
+    
+    func trimmed() -> String {
+        return trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }

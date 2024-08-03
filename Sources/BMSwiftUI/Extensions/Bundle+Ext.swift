@@ -1,48 +1,66 @@
 //
-//  File.swift
-//  
+//  Bundle+Ex.swift
 //
-//  Created by Bakr mohamed on 04/04/2023.
+//  Created by Bakr Mohamed on 01/08/2024.
+//  Copyright © 2024 Link Development. All rights reserved.
 //
 
 import Foundation
 
-fileprivate var kBundleKey = 0
-
-public class BundleExtension : Bundle {
+private final class BundleToken {
+    static var kBundleKey: UInt8 = 0
     
-    public override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
-        guard let string = (objc_getAssociatedObject(self, &kBundleKey) as? Bundle)?.localizedString(forKey: key, value: value, table: tableName) else {
-            return super.localizedString(forKey: key, value: value, table: tableName)
+    static let bundle: Bundle = {
+        return Bundle(for: BundleToken.self)
+    }()
+}
+
+final class BundleExtension: Bundle {
+    static var shared = BundleExtension()
+    
+    override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
+        guard let bundle = objc_getAssociatedObject(self, &BundleToken.kBundleKey) as? Bundle else {
+            return Bundle.main.localizedString(forKey: key, value: value, table: tableName)
         }
-        return string
         
+        // Fetch localized string from custom bundle
+        let localizedString = bundle.localizedString(forKey: key, value: value, table: tableName)
+        
+        // Debug print
+        return localizedString
     }
 }
 
-public extension Bundle {
-    
-//    static var locale: Locale? {
-//        guard UserDefaults.standard.array(forKey: "AppleLanguages") is [Locale] else { return nil }
-//        return .bestMatching
-//        }
-//
-    /// override main bundle class (once in the app life) to make new localizedString func work
-    static let once_action : Void = {
+extension Bundle {
+    static private var appLanguageDefaultsKey: String = "kAppLanguage"
+    static private var bundleType: String = "lproj"
+
+    /// Override the main bundle class (once in the app life) to make the new localizedString function work
+    static let onceAction: Void = {
         object_setClass(Bundle.main, BundleExtension.self)
     }()
     
-    static func setLanguage(language : String) {
-        Bundle.once_action
-        UserDefaults.standard.set([language], forKey: Locale.bestMatching.identifier) // Apple UserDefault for Language
+    static public func setLanguage(language: String) {
+        Bundle.onceAction
+        UserDefaults.standard.set([language], forKey: appLanguageDefaultsKey)
         UserDefaults.standard.synchronize()
-        guard let path = Bundle.main.path(forResource: language, ofType: "lproj") else {
-            print("Failed to get a bundle path.")
+        
+        guard let path = Bundle.main.path(forResource: language, ofType: bundleType) else {
             return
         }
         
-        objc_setAssociatedObject(Bundle.main, &kBundleKey, Bundle(path: path), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        
-        
+        if let languageBundle = Bundle(path: path) {
+            objc_setAssociatedObject(Bundle.main, &BundleToken.kBundleKey, languageBundle, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            
+            // Debug: List files in the bundle path
+            do {
+                _ = try FileManager.default.contentsOfDirectory(atPath: path)
+            } catch {
+                NSLog("Failed to list files in bundle path: \(error)")
+            }
+            
+        } else {
+            NSLog("Failed to create bundle for path: \(path)")
+        }
     }
 }

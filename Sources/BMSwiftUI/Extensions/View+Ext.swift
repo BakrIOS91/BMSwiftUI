@@ -31,11 +31,13 @@ public extension View {
     ///
     /// Pay attention to back button in navigation view. It will require customization as it's image direction won't change on a current screen.
     @ViewBuilder
-    func locale(
-        _ locale: Locale
-    ) -> some View {
-        self.environment(\.layoutDirection, locale.layoutDirection)
+    func setLocale(_ locale: Locale) -> some View {
+        self
             .environment(\.locale, locale)
+            .environment(\.layoutDirection, locale.layoutDirection)
+            .onAppear {
+                Bundle.setLanguage(language: locale.identifier)
+            }
     }
     
     @ViewBuilder func `if`<Content: View>(
@@ -220,6 +222,10 @@ public extension View {
         )
     }
     #endif
+    
+    func handleKeyBoard() -> some View {
+        modifier(HandelKeyBoard())
+    }
 
 }
 
