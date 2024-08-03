@@ -16,10 +16,10 @@ private final class BundleToken {
     }()
 }
 
-final class BundleExtension: Bundle {
+public final class BundleExtension: Bundle {
     static let shared = BundleExtension()
     
-    override func localizedString(forKey key: String, value: String? = nil, table tableName: String? = nil) -> String {
+    public override func localizedString(forKey key: String, value: String? = nil, table tableName: String? = nil) -> String {
         guard let bundle = objc_getAssociatedObject(self, &BundleToken.kBundleKey) as? Bundle else {
             return Bundle.main.localizedString(forKey: key, value: value, table: tableName)
         }
