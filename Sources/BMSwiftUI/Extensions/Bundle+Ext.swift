@@ -9,10 +9,6 @@ import Foundation
 
 private final class BundleToken {
     static var kBundleKey: UInt8 = 0
-    
-    static let bundle: Bundle = {
-        return Bundle(for: BundleToken.self)
-    }()
 }
 
 public final class BundleExtension: Bundle {
@@ -20,14 +16,15 @@ public final class BundleExtension: Bundle {
     
     public override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
         guard let bundle = objc_getAssociatedObject(self, &BundleToken.kBundleKey) as? Bundle else {
-            return Bundle.main.localizedString(forKey: key, value: value, table: tableName)
+            NSLog("Using Bundle.main for localization")
+            return super.localizedString(forKey: key, value: value, table: tableName)
         }
         
         // Fetch localized string from custom bundle
         let localizedString = bundle.localizedString(forKey: key, value: value, table: tableName)
         
-        // Debug print
-        print("Localized String: \(localizedString) for key: \(key)")
+        // Debug NSLog
+        NSLog("Localized String: \(localizedString) for key: \(key)")
         return localizedString
     }
 }
@@ -38,6 +35,7 @@ public extension Bundle {
     
     /// Override the main bundle class (once in the app life) to make the new localizedString function work
     static let onceAction: Void = {
+        NSLog("Overriding Bundle.main with BundleExtension")
         object_setClass(Bundle.main, BundleExtension.self)
     }()
     
@@ -47,7 +45,7 @@ public extension Bundle {
         UserDefaults.standard.synchronize()
         
         guard let path = Bundle.main.path(forResource: language, ofType: bundleType) else {
-            print("Failed to find path for resource: \(language).\(bundleType)")
+            NSLog("Failed to find path for resource: \(language).\(bundleType)")
             return
         }
         
@@ -57,13 +55,13 @@ public extension Bundle {
             // Debug: List files in the bundle path
             do {
                 let files = try FileManager.default.contentsOfDirectory(atPath: path)
-                print("Files in bundle path: \(files)")
+                NSLog("Files in bundle path: \(files)")
             } catch {
-                print("Failed to list files in bundle path: \(error)")
+                NSLog("Failed to list files in bundle path: \(error)")
             }
             
         } else {
-            print("Failed to create bundle for path: \(path)")
+            NSLog("Failed to create bundle for path: \(path)")
         }
     }
 }
