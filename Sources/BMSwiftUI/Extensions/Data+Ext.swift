@@ -6,7 +6,7 @@
 //
 
 import Foundation
-extension Data {
+public extension Data {
     func getSizeInMB() -> Double {
         let bcf = ByteCountFormatter()
         bcf.allowedUnits = [.useMB]

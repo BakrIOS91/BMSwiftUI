@@ -15,10 +15,10 @@ private final class BundleToken {
     }()
 }
 
-final class BundleExtension: Bundle {
+public final class BundleExtension: Bundle {
     static var shared = BundleExtension()
     
-    override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
+    public override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
         guard let bundle = objc_getAssociatedObject(self, &BundleToken.kBundleKey) as? Bundle else {
             return Bundle.main.localizedString(forKey: key, value: value, table: tableName)
         }
@@ -31,7 +31,7 @@ final class BundleExtension: Bundle {
     }
 }
 
-extension Bundle {
+public extension Bundle {
     static private var appLanguageDefaultsKey: String = "kAppLanguage"
     static private var bundleType: String = "lproj"
 
@@ -40,7 +40,7 @@ extension Bundle {
         object_setClass(Bundle.main, BundleExtension.self)
     }()
     
-    static public func setLanguage(language: String) {
+    static func setLanguage(language: String) {
         Bundle.onceAction
         UserDefaults.standard.set([language], forKey: appLanguageDefaultsKey)
         UserDefaults.standard.synchronize()

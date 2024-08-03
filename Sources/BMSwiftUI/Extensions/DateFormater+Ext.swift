@@ -7,8 +7,6 @@
 
 import Foundation
 
-import Foundation
-
 /// A set of helpful extensions for date formatting and time interval manipulation.
 public extension DateFormatter {
     
