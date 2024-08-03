@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+public var previewLocale: Locale?
 
 // MARK: - LocalePreviewContent
 private struct LocalePreviewContent: Identifiable {
@@ -47,13 +48,15 @@ public struct LocalePreview<Content: View>: View {
     }
     
     public var body: some View {
-        Group {
-            ForEach(previewContent) { preview in
-                content()
-                    .setLocale(preview.locale)
-                    .previewDisplayName("\(preview.device?.rawValue ?? "") Locale: \(preview.locale.identifier)")
-                    .if(let: preview.device) { $0.previewDevice($1) }
-            }
+        ForEach(previewContent) { preview in
+            content()
+                .environment(\.locale, preview.locale)
+                .environment(\.layoutDirection, preview.locale.layoutDirection)
+                .previewDisplayName("\(preview.device?.rawValue ?? "") Locale: \(preview.locale.identifier)")
+                .if(let: preview.device) { $0.previewDevice($1) }
+                .onAppear {
+                    previewLocale = preview.locale
+                }
         }
     }
 }

@@ -27,19 +27,6 @@ public extension View {
         }
     }
     
-    /// Sets locale and layout direction
-    ///
-    /// Pay attention to back button in navigation view. It will require customization as it's image direction won't change on a current screen.
-    @ViewBuilder
-    func setLocale(_ locale: Locale) -> some View {
-        self
-            .environment(\.locale, locale)
-            .environment(\.layoutDirection, locale.layoutDirection)
-            .onAppear {
-                Bundle.setLanguage(language: locale.identifier)
-            }
-    }
-    
     @ViewBuilder func `if`<Content: View>(
         _ condition: Bool, transform: (Self) -> Content,
         transformElse: ((Self) -> Content)? = nil) -> some View {
