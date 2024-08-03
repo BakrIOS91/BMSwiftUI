@@ -27,8 +27,6 @@ public final class BundleExtension: Bundle {
         // Fetch localized string from custom bundle
         let localizedString = bundle.localizedString(forKey: key, value: value, table: tableName)
         
-        // Debug NSLog
-        NSLog("Localized string: \(localizedString)")
         return localizedString
     }
 }
