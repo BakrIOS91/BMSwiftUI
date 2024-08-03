@@ -20,7 +20,7 @@ public struct LocalePreview<Content: View>: View {
     let content: () -> Content
     private let previewContent: [LocalePreviewContent]
     
-    init(
+    public init(
         previewDevices: [PreviewDevice],
         locales: [Locale.SupportedLocale],
         _ content: @escaping () -> Content
