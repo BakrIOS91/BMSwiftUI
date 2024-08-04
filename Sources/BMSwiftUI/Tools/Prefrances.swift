@@ -71,6 +71,6 @@ public final class Preferences {
     var preferencesChangedSubject = PassthroughSubject<AnyKeyPath, Never>()
     
     @UserDefault("kPreviewLocale")
-    var previewLocale: Locale?
+    public var previewLocale: Locale?
 }
 
