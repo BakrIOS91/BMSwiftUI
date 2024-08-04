@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-public var previewLocale: Locale?
-
 // MARK: - LocalePreviewContent
 private struct LocalePreviewContent: Identifiable {
     let id = UUID()
@@ -18,6 +16,8 @@ private struct LocalePreviewContent: Identifiable {
 
 // MARK: - LocalePreview
 public struct LocalePreview<Content: View>: View {
+    @Preference(\.previewLocale) var previewLocale
+    
     let content: () -> Content
     private let previewContent: [LocalePreviewContent]
     
