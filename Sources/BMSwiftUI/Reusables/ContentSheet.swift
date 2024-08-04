@@ -7,6 +7,10 @@
 #if os(iOS)
 import SwiftUI
 import UIKit
+// MARK: Detect if app in Preview Mode
+public var isInPreview: Bool {
+    return ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+}
 
 public enum SheetBackgroundStyle {
     case `default`
@@ -163,6 +167,7 @@ public extension View {
 }
 
 public struct SheetContainerView<Content: View>: View {
+    @Preference(\.previewLocale) var previewLocale
     @Binding public var isModalPresented: Bool
     public var content: () -> Content
     
@@ -215,6 +220,9 @@ public struct SheetContainerView<Content: View>: View {
             }
         }
         .edgesIgnoringSafeArea(.bottom)
+        .environment(\.locale, previewLocale ?? Locale.current )
+        .environment(\.layoutDirection, (previewLocale ?? Locale.current).layoutDirection)
+        
     }
 }
 #endif
