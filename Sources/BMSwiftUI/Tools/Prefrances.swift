@@ -64,7 +64,7 @@ public struct Preference<Value>: DynamicProperty {
 
 public final class Preferences {
     
-    static let shared = Preferences()
+    public static let shared = Preferences()
     private init() {}
     
     /// Sends through the changed key path whenever a change occurs.
