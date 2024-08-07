@@ -121,4 +121,8 @@ public extension Locale {
     var layoutDirection: LayoutDirection {
         return Locale.isRTL(locale: self) ? .rightToLeft : .leftToRight
     }
+    
+    static func isMatch(_ supportedLocale: SupportedLocale) -> Bool {
+        return Locale.current.identifier == supportedLocale.rawValue
+    }
 }
