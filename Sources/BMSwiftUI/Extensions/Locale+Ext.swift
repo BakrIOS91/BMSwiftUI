@@ -122,7 +122,7 @@ public extension Locale {
         return Locale.isRTL(locale: self) ? .rightToLeft : .leftToRight
     }
     
-    static func isMatch(_ supportedLocale: SupportedLocale) -> Bool {
+    func isMatch(_ supportedLocale: SupportedLocale) -> Bool {
         return Locale.current.identifier.contains(supportedLocale.rawValue)
     }
 }
