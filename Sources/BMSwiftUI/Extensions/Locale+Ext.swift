@@ -123,6 +123,6 @@ public extension Locale {
     }
     
     static func isMatch(_ supportedLocale: SupportedLocale) -> Bool {
-        return Locale.current.identifier == supportedLocale.rawValue
+        return Locale.current.identifier.contains(supportedLocale.rawValue)
     }
 }
