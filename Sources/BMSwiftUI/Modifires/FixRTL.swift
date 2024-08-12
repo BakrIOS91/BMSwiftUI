@@ -8,16 +8,16 @@
 
 import SwiftUI
 
-struct FixRTLModifier: ViewModifier {
+public struct FixRTLModifier: ViewModifier {
     @Environment(\.layoutDirection) var layoutDirection
     
-    func body(content: Content) -> some View {
+    public func body(content: Content) -> some View {
         content
             .scaleEffect(x: layoutDirection == .rightToLeft ? -1 : 1, y: 1)
     }
 }
 
-extension View {
+public extension View {
     func fixRTL() -> some View {
         modifier(FixRTLModifier())
     }
