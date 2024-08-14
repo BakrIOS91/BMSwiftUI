@@ -99,27 +99,34 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
         return viewController
     }
     
-    public func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        debugPrint("updateUIViewController called. isPresented: \(isPresented)")
-        
+    public func updateUIViewController(_ uiViewController: UIViewController, context: Context){
         if isPresented {
-            if uiViewController.presentedViewController == nil || !(uiViewController.presentedViewController is TransparentHostingController<Content>) {
+            // Check if there is already a presented view controller
+            if let presentedVC = uiViewController.presentedViewController {
+                // Dismiss the existing presented view controller
+                presentedVC.dismiss(animated: true, completion: {
+                    // Present the new view controller after dismissal
+                    let hostingController = TransparentHostingController(rootView: content)
+                    hostingController.transitioningDelegate = context.coordinator
+                    hostingController.modalPresentationStyle = .overCurrentContext
+                    uiViewController.present(hostingController, animated: true, completion: nil)
+                })
+            } else {
+                // If there is no presented view controller, present the new one
                 let hostingController = TransparentHostingController(rootView: content)
                 hostingController.transitioningDelegate = context.coordinator
-                hostingController.presentationController?.delegate = context.coordinator
                 hostingController.modalPresentationStyle = .overCurrentContext
-                
-                debugPrint("Presenting the sheet.")
                 uiViewController.present(hostingController, animated: true, completion: nil)
             }
         } else {
-            if let presentedViewController = uiViewController.presentedViewController,
-               presentedViewController is TransparentHostingController<Content> {
-                debugPrint("Dismissing the sheet.")
-                presentedViewController.dismiss(animated: true, completion: nil)
+            DispatchQueue.main.async {
+                if let presentedViewController = uiViewController.presentedViewController {
+                    presentedViewController.dismiss(animated: true, completion: nil)
+                }
             }
         }
     }
+    
     
     public func makeUIViewControllerTransitioningDelegate() -> UIViewControllerTransitioningDelegate {
         return NonDismissableTransitionDelegate()
