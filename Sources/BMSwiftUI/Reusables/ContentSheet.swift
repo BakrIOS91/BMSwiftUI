@@ -109,6 +109,7 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
                     let hostingController = TransparentHostingController(rootView: content)
                     hostingController.transitioningDelegate = context.coordinator
                     hostingController.modalPresentationStyle = .overCurrentContext
+                    hostingController.presentationController?.delegate = context.coordinator
                     uiViewController.present(hostingController, animated: true, completion: nil)
                 })
             } else {
@@ -116,6 +117,7 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
                 let hostingController = TransparentHostingController(rootView: content)
                 hostingController.transitioningDelegate = context.coordinator
                 hostingController.modalPresentationStyle = .overCurrentContext
+                hostingController.presentationController?.delegate = context.coordinator
                 uiViewController.present(hostingController, animated: true, completion: nil)
             }
         } else {
