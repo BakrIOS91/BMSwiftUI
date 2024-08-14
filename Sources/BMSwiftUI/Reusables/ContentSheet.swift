@@ -21,7 +21,7 @@ public class TransparentHostingController<Content: View>: UIHostingController<Co
     public override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
-        modalPresentationStyle = .overCurrentContext
+//        modalPresentationStyle = .overCurrentContext
     }
 }
 
@@ -108,7 +108,7 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
                     // Present the new view controller after dismissal
                     let hostingController = TransparentHostingController(rootView: content)
                     hostingController.transitioningDelegate = context.coordinator
-                    hostingController.presentationController?.delegate = context.coordinator
+//                    hostingController.presentationController?.delegate = context.coordinator
                     hostingController.modalPresentationStyle = .overCurrentContext
                     uiViewController.present(hostingController, animated: true, completion: nil)
                 })
@@ -116,7 +116,7 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
                 // If there is no presented view controller, present the new one
                 let hostingController = TransparentHostingController(rootView: content)
                 hostingController.transitioningDelegate = context.coordinator
-                hostingController.presentationController?.delegate = context.coordinator
+//                hostingController.presentationController?.delegate = context.coordinator
                 hostingController.modalPresentationStyle = .overCurrentContext
                 uiViewController.present(hostingController, animated: true, completion: nil)
             }
