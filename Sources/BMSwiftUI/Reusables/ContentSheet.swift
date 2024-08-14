@@ -108,16 +108,16 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
                     // Present the new view controller after dismissal
                     let hostingController = TransparentHostingController(rootView: content)
                     hostingController.transitioningDelegate = context.coordinator
-                    hostingController.modalPresentationStyle = .overCurrentContext
                     hostingController.presentationController?.delegate = context.coordinator
+                    hostingController.modalPresentationStyle = .overCurrentContext
                     uiViewController.present(hostingController, animated: true, completion: nil)
                 })
             } else {
                 // If there is no presented view controller, present the new one
                 let hostingController = TransparentHostingController(rootView: content)
                 hostingController.transitioningDelegate = context.coordinator
-                hostingController.modalPresentationStyle = .overCurrentContext
                 hostingController.presentationController?.delegate = context.coordinator
+                hostingController.modalPresentationStyle = .overCurrentContext
                 uiViewController.present(hostingController, animated: true, completion: nil)
             }
         } else {
