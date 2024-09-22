@@ -7,10 +7,6 @@
 #if os(iOS)
 import SwiftUI
 import UIKit
-// MARK: Detect if app in Preview Mode
-public var isInPreview: Bool {
-    return ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
-}
 
 public enum SheetBackgroundStyle {
     case `default`
@@ -21,7 +17,6 @@ public class TransparentHostingController<Content: View>: UIHostingController<Co
     public override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
-//        modalPresentationStyle = .overCurrentContext
     }
 }
 
@@ -58,6 +53,7 @@ class NonDismissablePresentationController: UIPresentationController {
 
 public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
     @Binding public var isPresented: Bool
+    var onDismiss: () -> Void
     public let content: Content
     
     public class Coordinator: NSObject, UIViewControllerTransitioningDelegate, UIAdaptivePresentationControllerDelegate {
@@ -101,31 +97,13 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
     
     public func updateUIViewController(_ uiViewController: UIViewController, context: Context){
         if isPresented {
-            // Check if there is already a presented view controller
-            if let presentedVC = uiViewController.presentedViewController {
-                // Dismiss the existing presented view controller
-                presentedVC.dismiss(animated: true, completion: {
-                    // Present the new view controller after dismissal
-                    let hostingController = TransparentHostingController(rootView: content)
-                    hostingController.transitioningDelegate = context.coordinator
-                    hostingController.presentationController?.delegate = context.coordinator
-                    hostingController.modalPresentationStyle = .overCurrentContext
-                    uiViewController.present(hostingController, animated: true, completion: nil)
-                })
-            } else {
-                // If there is no presented view controller, present the new one
-                let hostingController = TransparentHostingController(rootView: content)
-                hostingController.transitioningDelegate = context.coordinator
-                hostingController.presentationController?.delegate = context.coordinator
-                hostingController.modalPresentationStyle = .overCurrentContext
-                uiViewController.present(hostingController, animated: true, completion: nil)
-            }
+            let sheetController = TransparentHostingController(rootView: content)
+            sheetController.presentationController?.delegate = context.coordinator
+            uiViewController.present(sheetController, animated: true)
         } else {
-            DispatchQueue.main.async {
-                if let presentedViewController = uiViewController.presentedViewController {
-                    presentedViewController.dismiss(animated: true, completion: nil)
-                }
-            }
+            uiViewController.dismiss(animated: true)
+            onDismiss()
+            self.isPresented = false
         }
     }
     
@@ -144,7 +122,8 @@ class NonDismissableTransitionDelegate: NSObject, UIViewControllerTransitioningD
 public extension View {
     func contentSheet<Item, Destination: View>(
         item: Binding<Item?>,
-        backgroundStyle: SheetBackgroundStyle = .default,
+        backgroundStyle: SheetBackgroundStyle = .transparent,
+        onDismiss: @escaping () -> Void = {},
         @ViewBuilder contentView: @escaping (Item) -> Destination
     ) -> some View {
         let isActive = Binding(
@@ -159,12 +138,14 @@ public extension View {
     
     func contentSheet<Content: View>(
         isPresented: Binding<Bool>,
-        backgroundStyle: SheetBackgroundStyle = .default,
+        backgroundStyle: SheetBackgroundStyle = .transparent,
+        onDismiss: @escaping () -> Void = {},
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         self.background(
             TransparentSheet(
                 isPresented: isPresented,
+                onDismiss: onDismiss,
                 content: SheetContainerView(
                     isModalPresented: isPresented,
                     sheetBackgroundStyle: backgroundStyle,
@@ -176,7 +157,6 @@ public extension View {
 }
 
 public struct SheetContainerView<Content: View>: View {
-    @Preference(\.previewLocale) var previewLocale
     @Binding public var isModalPresented: Bool
     public var content: () -> Content
     
@@ -229,9 +209,6 @@ public struct SheetContainerView<Content: View>: View {
             }
         }
         .edgesIgnoringSafeArea(.bottom)
-        .environment(\.locale, previewLocale ?? Locale.current )
-        .environment(\.layoutDirection, (previewLocale ?? Locale.current).layoutDirection)
-        
     }
 }
 #endif
