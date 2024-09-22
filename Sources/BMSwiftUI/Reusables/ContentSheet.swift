@@ -56,32 +56,16 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
     var onDismiss: () -> Void
     public let content: Content
     
-    public class Coordinator: NSObject, UIViewControllerTransitioningDelegate, UIAdaptivePresentationControllerDelegate {
+    public final class Coordinator: NSObject, UISheetPresentationControllerDelegate {
+        
         var parent: TransparentSheet
         
         init(parent: TransparentSheet) {
             self.parent = parent
         }
         
-        public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-            DispatchQueue.main.async {
-                self.parent.isPresented = false
-            }
-        }
-        
-        func presentationController(_ controller: UIPresentationController, willPresentWithAdaptiveStyle style: UIModalPresentationStyle) -> UIViewController? {
-            return nil
-        }
-        
-        public func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
-            return false
-        }
-        
-        public func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
-            return .none
-        }
-        
-        public func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
+        public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+            parent.isPresented = false
         }
     }
     
