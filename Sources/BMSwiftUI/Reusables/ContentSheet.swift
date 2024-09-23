@@ -7,6 +7,10 @@
 #if os(iOS)
 import SwiftUI
 import UIKit
+// MARK: Detect if app in Preview Mode
+public var isInPreview: Bool {
+    return ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+}
 
 public enum SheetBackgroundStyle {
     case `default`
@@ -56,16 +60,33 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
     var onDismiss: () -> Void
     public let content: Content
     
-    public final class Coordinator: NSObject, UISheetPresentationControllerDelegate {
-        
+    public class Coordinator: NSObject, UIViewControllerTransitioningDelegate, UIAdaptivePresentationControllerDelegate {
+        weak var sheetController: UIViewController?
         var parent: TransparentSheet
         
         init(parent: TransparentSheet) {
             self.parent = parent
         }
         
-        public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
-            parent.isPresented = false
+        public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+            DispatchQueue.main.async {
+                self.parent.isPresented = false
+            }
+        }
+        
+        func presentationController(_ controller: UIPresentationController, willPresentWithAdaptiveStyle style: UIModalPresentationStyle) -> UIViewController? {
+            return nil
+        }
+        
+        public func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+            return false
+        }
+        
+        public func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+            return .none
+        }
+        
+        public func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
         }
     }
     
@@ -81,13 +102,24 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
     
     public func updateUIViewController(_ uiViewController: UIViewController, context: Context){
         if isPresented {
-            let sheetController = TransparentHostingController(rootView: content)
-            sheetController.presentationController?.delegate = context.coordinator
-            uiViewController.present(sheetController, animated: true)
+            if context.coordinator.sheetController == nil {
+                let sheetController = TransparentHostingController(rootView: content)
+                sheetController.presentationController?.delegate = context.coordinator
+                context.coordinator.sheetController = sheetController
+                uiViewController.present(sheetController, animated: true)
+            }
         } else {
-            uiViewController.dismiss(animated: true)
-            onDismiss()
-            self.isPresented = false
+            // Dismiss only the sheet we are managing
+            if let sheetController = context.coordinator.sheetController,
+               uiViewController.presentedViewController == sheetController {
+                uiViewController.dismiss(animated: true) {
+                    self.onDismiss()
+                    DispatchQueue.main.async {
+                        self.isPresented = false
+                    }
+                }
+                context.coordinator.sheetController = nil
+            }
         }
     }
     
@@ -106,7 +138,7 @@ class NonDismissableTransitionDelegate: NSObject, UIViewControllerTransitioningD
 public extension View {
     func contentSheet<Item, Destination: View>(
         item: Binding<Item?>,
-        backgroundStyle: SheetBackgroundStyle = .transparent,
+        backgroundStyle: SheetBackgroundStyle = .default,
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder contentView: @escaping (Item) -> Destination
     ) -> some View {
@@ -115,14 +147,14 @@ public extension View {
             set: { value in if !value { item.wrappedValue = nil } }
         )
         
-        return contentSheet(isPresented: isActive, backgroundStyle: backgroundStyle) {
+        return contentSheet(isPresented: isActive, backgroundStyle: backgroundStyle, onDismiss: onDismiss) {
             item.wrappedValue.map(contentView)
         }
     }
     
     func contentSheet<Content: View>(
         isPresented: Binding<Bool>,
-        backgroundStyle: SheetBackgroundStyle = .transparent,
+        backgroundStyle: SheetBackgroundStyle = .default,
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
@@ -141,6 +173,7 @@ public extension View {
 }
 
 public struct SheetContainerView<Content: View>: View {
+    @Preference(\.previewLocale) var previewLocale
     @Binding public var isModalPresented: Bool
     public var content: () -> Content
     
@@ -193,6 +226,9 @@ public struct SheetContainerView<Content: View>: View {
             }
         }
         .edgesIgnoringSafeArea(.bottom)
+        .environment(\.locale, previewLocale ?? Locale.current )
+        .environment(\.layoutDirection, (previewLocale ?? Locale.current).layoutDirection)
+        
     }
 }
 #endif
