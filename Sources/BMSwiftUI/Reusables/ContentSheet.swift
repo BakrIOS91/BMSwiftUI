@@ -173,7 +173,7 @@ public extension View {
                 )
             )
         case .blured:
-            self.blur(radius: 5).background(
+            self.blur(radius: isPresented.wrappedValue ? 3 : 0).background(
                 TransparentSheet(
                     isPresented: isPresented,
                     onDismiss: onDismiss,
@@ -212,11 +212,7 @@ public struct SheetContainerView<Content: View>: View {
                 .background(backgroundColor)
                 .onAppear {
                     if sheetBackgroundStyle == .default {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                backgroundColor = .black.opacity(0.1)
-                            }
-                        }
+                        backgroundColor = .black.opacity(0.6)
                     }
                 }
                 .onTapGesture {
