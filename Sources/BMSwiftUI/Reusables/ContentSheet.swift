@@ -13,8 +13,8 @@ public var isInPreview: Bool {
 }
 
 public enum SheetBackgroundStyle {
-    case `default`
-    case blured
+    case `default`(opacity: CGFloat)
+    case blured(blur: CGFloat, opacity: CGFloat)
     case transparent
 }
 
@@ -139,7 +139,7 @@ class NonDismissableTransitionDelegate: NSObject, UIViewControllerTransitioningD
 public extension View {
     func contentSheet<Item, Destination: View>(
         item: Binding<Item?>,
-        backgroundStyle: SheetBackgroundStyle = .default,
+        backgroundStyle: SheetBackgroundStyle = .default(opacity: 0.1),
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder contentView: @escaping (Item) -> Destination
     ) -> some View {
@@ -155,13 +155,13 @@ public extension View {
     @ViewBuilder
     func contentSheet<Content: View>(
         isPresented: Binding<Bool>,
-        backgroundStyle: SheetBackgroundStyle = .default,
+        backgroundStyle: SheetBackgroundStyle = .default(opacity: 0.1),
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         switch backgroundStyle {
         case .default, .transparent:
-           self.background(
+            self.background(
                 TransparentSheet(
                     isPresented: isPresented,
                     onDismiss: onDismiss,
@@ -172,14 +172,14 @@ public extension View {
                     )
                 )
             )
-        case .blured:
-            self.blur(radius: isPresented.wrappedValue ? 3 : 0).background(
+        case let .blured(blur, opacity):
+            self.blur(radius: isPresented.wrappedValue ? blur : 0).background(
                 TransparentSheet(
                     isPresented: isPresented,
                     onDismiss: onDismiss,
                     content: SheetContainerView(
                         isModalPresented: isPresented,
-                        sheetBackgroundStyle: .default,
+                        sheetBackgroundStyle: .default(opacity: opacity),
                         content
                     )
                 )
@@ -196,13 +196,22 @@ public struct SheetContainerView<Content: View>: View {
     @State private var backgroundColor: Color = .white.opacity(0.01)
     @State private var sheetBackgroundStyle: SheetBackgroundStyle
     
-    public init(isModalPresented: Binding<Bool>,
-                sheetBackgroundStyle: SheetBackgroundStyle,
-                _ content: @escaping () -> Content
+    
+    var opacityLevel: CGFloat = .zero
+    var blureEffect: CGFloat = .zero
+    
+    public init(
+        isModalPresented: Binding<Bool>,
+        sheetBackgroundStyle: SheetBackgroundStyle,
+        opacityLevel: CGFloat = 0.1,
+        blureEffect: CGFloat = 1,
+        _ content: @escaping () -> Content
     ) {
         self._isModalPresented = isModalPresented
         self.sheetBackgroundStyle = sheetBackgroundStyle
         self.content = content
+        self.opacityLevel = opacityLevel
+        self.blureEffect = blureEffect
     }
     
     public var body: some View {
@@ -211,8 +220,13 @@ public struct SheetContainerView<Content: View>: View {
                 .foregroundColor(.clear)
                 .background(backgroundColor)
                 .onAppear {
-                    if sheetBackgroundStyle == .default {
-                        backgroundColor = .black.opacity(0.6)
+                    switch sheetBackgroundStyle {
+                    case .default(let opacity):
+                        backgroundColor = .black.opacity(opacity)
+                    case .blured(_ , let opacity):
+                        backgroundColor = .black.opacity(opacity)
+                    case .transparent:
+                        break
                     }
                 }
                 .onTapGesture {
