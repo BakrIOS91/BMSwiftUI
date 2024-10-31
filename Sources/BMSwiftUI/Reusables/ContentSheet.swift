@@ -14,6 +14,7 @@ public var isInPreview: Bool {
 
 public enum SheetBackgroundStyle {
     case `default`
+    case blured
     case transparent
 }
 
@@ -151,24 +152,39 @@ public extension View {
             item.wrappedValue.map(contentView)
         }
     }
-    
+    @ViewBuilder
     func contentSheet<Content: View>(
         isPresented: Binding<Bool>,
         backgroundStyle: SheetBackgroundStyle = .default,
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        self.background(
-            TransparentSheet(
-                isPresented: isPresented,
-                onDismiss: onDismiss,
-                content: SheetContainerView(
-                    isModalPresented: isPresented,
-                    sheetBackgroundStyle: backgroundStyle,
-                    content
+        switch backgroundStyle {
+        case .default, .transparent:
+           self.background(
+                TransparentSheet(
+                    isPresented: isPresented,
+                    onDismiss: onDismiss,
+                    content: SheetContainerView(
+                        isModalPresented: isPresented,
+                        sheetBackgroundStyle: backgroundStyle,
+                        content
+                    )
                 )
             )
-        )
+        case .blured:
+            self.blur(radius: 5).background(
+                TransparentSheet(
+                    isPresented: isPresented,
+                    onDismiss: onDismiss,
+                    content: SheetContainerView(
+                        isModalPresented: isPresented,
+                        sheetBackgroundStyle: .default,
+                        content
+                    )
+                )
+            )
+        }
     }
 }
 
