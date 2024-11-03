@@ -139,6 +139,8 @@ class NonDismissableTransitionDelegate: NSObject, UIViewControllerTransitioningD
 public extension View {
     func contentSheet<Item, Destination: View>(
         item: Binding<Item?>,
+        sheetBackgroundColor: Color = .white,
+        sheetCorrnerRaduis: CGFloat = 20,
         backgroundStyle: SheetBackgroundStyle = .default(opacity: 0.1),
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder contentView: @escaping (Item) -> Destination
@@ -155,6 +157,8 @@ public extension View {
     @ViewBuilder
     func contentSheet<Content: View>(
         isPresented: Binding<Bool>,
+        sheetBackgroundColor: Color = .white,
+        sheetCorrnerRaduis: CGFloat = 20,
         backgroundStyle: SheetBackgroundStyle = .default(opacity: 0.1),
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder content: @escaping () -> Content
@@ -168,6 +172,8 @@ public extension View {
                     content: SheetContainerView(
                         isModalPresented: isPresented,
                         sheetBackgroundStyle: backgroundStyle,
+                        sheetBackgroundColor: sheetBackgroundColor,
+                        sheetCorrnerRaduis: sheetCorrnerRaduis,
                         content
                     )
                 )
@@ -199,10 +205,13 @@ public struct SheetContainerView<Content: View>: View {
     
     var opacityLevel: CGFloat = .zero
     var blureEffect: CGFloat = .zero
-    
+    var sheetBackgroundColor: Color = .white
+    var sheetCorrnerRaduis: CGFloat = 0
     public init(
         isModalPresented: Binding<Bool>,
         sheetBackgroundStyle: SheetBackgroundStyle,
+        sheetBackgroundColor: Color = .white,
+        sheetCorrnerRaduis: CGFloat = 0,
         opacityLevel: CGFloat = 0.1,
         blureEffect: CGFloat = 1,
         _ content: @escaping () -> Content
@@ -244,8 +253,8 @@ public struct SheetContainerView<Content: View>: View {
                     content()
                 }
                 .background(
-                    Color.white
-                        .cornerRadius(20)
+                    sheetBackgroundColor
+                        .setCornerRadius(sheetCorrnerRaduis)
                         .shadow(radius: 2)
                 )
                 
