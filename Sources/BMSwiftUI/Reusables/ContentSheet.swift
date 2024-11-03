@@ -185,7 +185,9 @@ public extension View {
                     onDismiss: onDismiss,
                     content: SheetContainerView(
                         isModalPresented: isPresented,
-                        sheetBackgroundStyle: .default(opacity: opacity),
+                        sheetBackgroundStyle: backgroundStyle,
+                        sheetBackgroundColor: sheetBackgroundColor,
+                        sheetCorrnerRaduis: sheetCorrnerRaduis,
                         content
                     )
                 )
@@ -221,6 +223,8 @@ public struct SheetContainerView<Content: View>: View {
         self.content = content
         self.opacityLevel = opacityLevel
         self.blureEffect = blureEffect
+        self.sheetBackgroundColor = sheetBackgroundColor
+        self.sheetCorrnerRaduis = sheetCorrnerRaduis
     }
     
     public var body: some View {
