@@ -252,9 +252,6 @@ public struct SheetContainerView<Content: View>: View {
             }
         }
         .edgesIgnoringSafeArea(.bottom)
-        .environment(\.locale, previewLocale ?? Locale.current )
-        .environment(\.layoutDirection, (previewLocale ?? Locale.current).layoutDirection)
-        
     }
 }
 #endif
