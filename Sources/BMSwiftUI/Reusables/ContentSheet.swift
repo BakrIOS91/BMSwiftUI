@@ -150,7 +150,7 @@ public extension View {
             set: { value in if !value { item.wrappedValue = nil } }
         )
         
-        return contentSheet(isPresented: isActive, backgroundStyle: backgroundStyle, onDismiss: onDismiss) {
+        return contentSheet(isPresented: isActive, sheetBackgroundColor: sheetBackgroundColor, sheetCorrnerRaduis: sheetCorrnerRaduis, backgroundStyle: backgroundStyle, onDismiss: onDismiss) {
             item.wrappedValue.map(contentView)
         }
     }
