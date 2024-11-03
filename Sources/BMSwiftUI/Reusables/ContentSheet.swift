@@ -141,7 +141,7 @@ public extension View {
         item: Binding<Item?>,
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 20,
-        backgroundStyle: SheetBackgroundStyle = .default(opacity: 0.1),
+        backgroundStyle: SheetBackgroundStyle = .transparent,
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder contentView: @escaping (Item) -> Destination
     ) -> some View {
@@ -159,7 +159,7 @@ public extension View {
         isPresented: Binding<Bool>,
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 20,
-        backgroundStyle: SheetBackgroundStyle = .default(opacity: 0.1),
+        backgroundStyle: SheetBackgroundStyle = .transparent,
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
