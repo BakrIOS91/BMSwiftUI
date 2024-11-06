@@ -105,6 +105,9 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
         if isPresented {
             if context.coordinator.sheetController == nil {
                 let sheetController = TransparentHostingController(rootView: content)
+                sheetController.modalPresentationStyle = .overFullScreen
+                sheetController.view.backgroundColor = .clear // Transparent background
+
                 sheetController.presentationController?.delegate = context.coordinator
                 context.coordinator.sheetController = sheetController
                 uiViewController.present(sheetController, animated: true)
