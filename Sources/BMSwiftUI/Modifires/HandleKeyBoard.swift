@@ -7,13 +7,15 @@
 
 import SwiftUI
 
-struct HandelKeyBoard : ViewModifier {
+struct HandelKeyBoard: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .onTapGesture {
-                #if canImport(UIKit)
-                UIApplication.shared.dismissKeyboard()
-                #endif
-            }
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    #if canImport(UIKit)
+                    UIApplication.shared.dismissKeyboard()
+                    #endif
+                }
+            )
     }
 }
