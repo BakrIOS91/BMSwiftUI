@@ -60,6 +60,7 @@ public extension DateFormatter {
         case eeee = "EEEE"
         case MMddyyyyHHmm = "MM/dd/yyyy HH:mm"
         case dMMMMyyyyWithPractes = "d MMMM, yyyy (HH:mm)"
+        case dmmmmyyyyhmacoma = "d MMM yyyy , hh:mma"
         
     }
     
