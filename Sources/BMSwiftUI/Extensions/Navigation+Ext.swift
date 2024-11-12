@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-public extension UINavigationController: UIGestureRecognizerDelegate {
+extension UINavigationController: UIGestureRecognizerDelegate {
     open override func viewDidLoad() {
         super.viewDidLoad()
         interactivePopGestureRecognizer?.delegate = self
