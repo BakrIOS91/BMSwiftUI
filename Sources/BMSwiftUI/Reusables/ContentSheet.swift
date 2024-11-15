@@ -189,7 +189,8 @@ public extension View {
                     content: SheetContainerView(
                         isModalPresented: isPresented,
                         sheetBackgroundStyle: backgroundStyle,
-                        sheetBackgroundColor: sheetBackgroundColor,
+                        sheetBackgroundColor: sheetBackgroundColor
+                            .opacity(opacity),
                         sheetCorrnerRaduis: sheetCorrnerRaduis,
                         content
                     )
