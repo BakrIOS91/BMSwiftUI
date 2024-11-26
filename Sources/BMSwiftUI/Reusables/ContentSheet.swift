@@ -153,7 +153,13 @@ public extension View {
             set: { value in if !value { item.wrappedValue = nil } }
         )
         
-        return contentSheet(isPresented: isActive, sheetBackgroundColor: sheetBackgroundColor, sheetCorrnerRaduis: sheetCorrnerRaduis, backgroundStyle: backgroundStyle, onDismiss: onDismiss) {
+        return contentSheet(
+            isPresented: isActive,
+            sheetBackgroundColor: sheetBackgroundColor,
+            sheetCorrnerRaduis: sheetCorrnerRaduis,
+            backgroundStyle: backgroundStyle,
+            onDismiss: onDismiss
+        ) {
             item.wrappedValue.map(contentView)
         }
     }
@@ -182,7 +188,7 @@ public extension View {
                 )
             )
         case let .blured(blur, opacity):
-            self.blur(radius: isPresented.wrappedValue ? blur : 0).background(
+            self.background(
                 TransparentSheet(
                     isPresented: isPresented,
                     onDismiss: onDismiss,
@@ -191,6 +197,7 @@ public extension View {
                         sheetBackgroundStyle: backgroundStyle,
                         sheetBackgroundColor: sheetBackgroundColor,
                         sheetCorrnerRaduis: sheetCorrnerRaduis,
+                        blureEffect: blur,
                         content
                     )
                 )
@@ -208,10 +215,11 @@ public struct SheetContainerView<Content: View>: View {
     @State private var sheetBackgroundStyle: SheetBackgroundStyle
     
     
-    var opacityLevel: CGFloat = .zero
-    var blureEffect: CGFloat = .zero
+    @State private var opacityLevel: CGFloat = .zero
+    @State private var blureEffect: CGFloat = .zero
     var sheetBackgroundColor: Color = .white
     var sheetCorrnerRaduis: CGFloat = 0
+
     public init(
         isModalPresented: Binding<Bool>,
         sheetBackgroundStyle: SheetBackgroundStyle,
@@ -228,19 +236,39 @@ public struct SheetContainerView<Content: View>: View {
         self.blureEffect = blureEffect
         self.sheetBackgroundColor = sheetBackgroundColor
         self.sheetCorrnerRaduis = sheetCorrnerRaduis
+        
+        print(sheetBackgroundColor,opacityLevel,blureEffect)
     }
     
     public var body: some View {
-        ZStack {
-            Rectangle()
-                .foregroundColor(.clear)
-                .background(backgroundColor)
+        VStack(spacing: 0) {
+            Spacer()
+            
+            VStack {
+                WideSpacerView(.horizontal)
+                content()
+            }
+            .background(
+                sheetBackgroundColor
+                    .setCornerRadius(sheetCorrnerRaduis)
+                    .shadow(radius: 2)
+            )
+            
+        }
+        .background(
+            BlurEffectView(
+                radius: blureEffect,
+                opacity: opacityLevel,
+                backgroundColor: backgroundColor
+            )
                 .onAppear {
                     switch sheetBackgroundStyle {
                     case .default(let opacity):
                         backgroundColor = .black.opacity(opacity)
-                    case .blured(_ , let opacity):
+                    case .blured(let blur, let opacity):
                         backgroundColor = .black.opacity(opacity)
+                        blureEffect = blur
+                        opacityLevel = opacity
                     case .transparent:
                         break
                     }
@@ -251,23 +279,10 @@ public struct SheetContainerView<Content: View>: View {
                         isModalPresented = false
                     }
                 }
-            
-            VStack(spacing: 0) {
-                Spacer()
-                
-                VStack {
-                    WideSpacerView(.horizontal)
-                    content()
-                }
-                .background(
-                    sheetBackgroundColor
-                        .setCornerRadius(sheetCorrnerRaduis)
-                        .shadow(radius: 2)
-                )
-                
-            }
-        }
-        .edgesIgnoringSafeArea(.bottom)
+        )
+        .ignoresSafeArea()
+        
     }
 }
+
 #endif
