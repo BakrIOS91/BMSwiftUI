@@ -105,11 +105,11 @@ public extension View {
         let isActive = Binding(
             get: { item.wrappedValue != nil },
             set: { value in
-                if !value {
-                    // Clear the item to dismiss the view
-                    item.wrappedValue = nil
+                if value {
+                    // Navigation triggered: ensure VoiceOver focuses on the new screen
+                    UIAccessibility.post(notification: .screenChanged, argument: "Navigating to new screen")
                 } else {
-                    // Explicitly set isActive to false when navigation occurs
+                    // Navigation dismissed: clear the item to remove the dismissed screen
                     item.wrappedValue = nil
                 }
             }
