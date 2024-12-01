@@ -106,26 +106,22 @@ public extension View {
             get: { item.wrappedValue != nil },
             set: { value in
                 if !value {
-                    item.wrappedValue = nil // Clear item on dismissal
+                    item.wrappedValue = nil // Clear the item when navigation is dismissed
                 }
             }
         )
-        
-        return NavigationLink(
-            isActive: isActive,
-            destination: {
-                if let unwrappedItem = item.wrappedValue {
-                    destination(unwrappedItem)
-                        .onAppear {
-                            // Navigation has occurred; handle it here.
-                            isActive.wrappedValue = false
-                        }
+
+        return Group {
+            if let unwrappedItem = item.wrappedValue {
+                NavigationLink(
+                    destination: destination(unwrappedItem),
+                    isActive: isActive
+                ) {
+                    // No empty label; return a functional view or nothing visual at all.
+                    Color.clear.frame(width: 0, height: 0)
                 }
-            },
-            label: {
-                EmptyView() // Keeps the link invisible.
             }
-        )
+        }
     }
 
     /// Navigation view modifier
