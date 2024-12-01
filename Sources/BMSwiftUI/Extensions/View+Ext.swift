@@ -1,6 +1,6 @@
 //
 //  View+Ext.swift
-//  
+//
 //
 //  Created by Bakr mohamed on 03/04/2023.
 //
@@ -25,16 +25,16 @@ public extension View {
     @ViewBuilder func `if`<Content: View>(
         _ condition: Bool, transform: (Self) -> Content,
         transformElse: ((Self) -> Content)? = nil) -> some View {
-           if condition {
-               transform(self)
-           } else {
-               if let transformElse = transformElse {
-                   transformElse(self)
-               } else {
-                   self
-               }
-           }
-       }
+            if condition {
+                transform(self)
+            } else {
+                if let transformElse = transformElse {
+                    transformElse(self)
+                } else {
+                    self
+                }
+            }
+        }
     
     /// `if let` statement view modifier
     ///
@@ -106,14 +106,12 @@ public extension View {
             get: { item.wrappedValue != nil },
             set: { value in if !value { item.wrappedValue = nil } }
         )
-        return NavigationLink(
-            destination: item.wrappedValue.map(destination),
-            isActive: isActive
-        ) {
+        return navigation(isActive: isActive) {
             item.wrappedValue.map(destination)
+            isActive = .constant(false)
         }
     }
-
+    
     /// Navigation view modifier
     ///
     /// Example:
@@ -162,10 +160,10 @@ public extension View {
                     .preference(key: FramePreferenceKey.self, value: geometryProxy.frame(in: space))
             }
         )
-            .onPreferenceChange(FramePreferenceKey.self, perform: onChange)
+        .onPreferenceChange(FramePreferenceKey.self, perform: onChange)
     }
     
-    #if os(iOS)
+#if os(iOS)
     func cornerRadius(
         _ radius: CGFloat,
         corners: UIRectCorner
@@ -180,9 +178,9 @@ public extension View {
     func flippedHorizontally() -> some View {
         self.rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
     }
-    #endif
+#endif
     
-    #if os(iOS)
+#if os(iOS)
     /// Sets navigation bar style when view appers
     ///
     /// - Warning:
@@ -206,12 +204,12 @@ public extension View {
             )
         )
     }
-    #endif
+#endif
     
     func handleKeyBoard() -> some View {
         modifier(HandelKeyBoard())
     }
-
+    
 }
 
 public extension View {
@@ -351,7 +349,7 @@ public extension View {
 private struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
     var corners: UIRectCorner = .allCorners
-
+    
     func path(
         in rect: CGRect
     ) -> Path {
@@ -362,11 +360,11 @@ private struct RoundedCorner: Shape {
 #endif
 
 private struct SizePreferenceKey: PreferenceKey {
-  static var defaultValue: CGSize = .zero
-  static func reduce(
-    value: inout CGSize,
-    nextValue: () -> CGSize
-  ) {}
+    static var defaultValue: CGSize = .zero
+    static func reduce(
+        value: inout CGSize,
+        nextValue: () -> CGSize
+    ) {}
 }
 
 private struct FramePreferenceKey: PreferenceKey {
