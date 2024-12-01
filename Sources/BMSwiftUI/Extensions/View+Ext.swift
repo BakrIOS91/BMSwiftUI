@@ -102,7 +102,7 @@ public extension View {
         item: Binding<Item?>,
         @ViewBuilder destination: (Item) -> Destination
     ) -> some View {
-        let isActive = Binding(
+        var isActive = Binding(
             get: { item.wrappedValue != nil },
             set: { value in if !value { item.wrappedValue = nil } }
         )
