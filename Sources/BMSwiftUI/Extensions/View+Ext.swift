@@ -120,8 +120,6 @@ public extension View {
                             // Navigation has occurred; handle it here.
                             isActive.wrappedValue = false
                         }
-                } else {
-                    EmptyView() // Placeholder for when there’s no item.
                 }
             },
             label: {
