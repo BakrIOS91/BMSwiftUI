@@ -104,13 +104,21 @@ public extension View {
     ) -> some View {
         let isActive = Binding(
             get: { item.wrappedValue != nil },
-            set: { value in if !value { item.wrappedValue = nil } }
+            set: { value in
+                if !value {
+                    item.wrappedValue = nil
+                }
+            }
         )
-        return NavigationLink(
-            destination: item.wrappedValue.map(destination),
-            isActive: isActive
-        ) {
-            EmptyView()
+        return Group {
+            if let unwrappedItem = item.wrappedValue {
+                NavigationLink(
+                    destination: destination(unwrappedItem),
+                    isActive: isActive
+                ) {
+                    EmptyView() // Ensures no additional visual element.
+                }
+            }
         }
     }
     
