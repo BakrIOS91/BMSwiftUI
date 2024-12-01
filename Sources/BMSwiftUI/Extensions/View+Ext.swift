@@ -110,18 +110,22 @@ public extension View {
                 }
             }
         )
-        return Group {
-            if let unwrappedItem = item.wrappedValue {
-                NavigationLink(
-                    destination: destination(unwrappedItem),
-                    isActive: isActive
-                ) {
-                    EmptyView() // Ensures no additional visual element.
+        
+        return NavigationLink(
+            isActive: isActive,
+            destination: {
+                if let unwrappedItem = item.wrappedValue {
+                    destination(unwrappedItem)
+                } else {
+                    EmptyView() // Placeholder when no destination is active.
                 }
+            },
+            label: {
+                EmptyView() // Keeps the link invisible.
             }
-        }
+        )
     }
-    
+
     /// Navigation view modifier
     ///
     /// Example:
