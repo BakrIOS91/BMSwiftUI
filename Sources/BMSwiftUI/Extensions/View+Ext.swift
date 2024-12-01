@@ -106,11 +106,17 @@ public extension View {
             get: { item.wrappedValue != nil },
             set: { value in
                 if value {
-                    // Navigation triggered: ensure VoiceOver focuses on the new screen
-                    UIAccessibility.post(notification: .screenChanged, argument: "Navigating to new screen")
+                    // Announce the new screen for VoiceOver immediately
+                    DispatchQueue.main.async {
+                        if let item = item.wrappedValue {
+                            UIAccessibility.post(notification: .screenChanged, argument: "Navigating to \(item)")
+                        }
+                    }
                 } else {
-                    // Navigation dismissed: clear the item to remove the dismissed screen
-                    item.wrappedValue = nil
+                    // Clear the item before dismissal
+                    DispatchQueue.main.async {
+                        item.wrappedValue = nil
+                    }
                 }
             }
         )
