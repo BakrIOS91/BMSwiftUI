@@ -102,16 +102,34 @@ public extension View {
         item: Binding<Item?>,
         @ViewBuilder destination: (Item) -> Destination
     ) -> some View {
-        var isActive = Binding(
+        let isActive = Binding(
             get: { item.wrappedValue != nil },
-            set: { value in if !value { item.wrappedValue = nil } }
+            set: { value in
+                if !value {
+                    item.wrappedValue = nil // Clear item on dismissal
+                }
+            }
         )
-        return navigation(isActive: isActive) {
-            item.wrappedValue.map(destination)
-            isActive = .constant(false)
-        }
+        
+        return NavigationLink(
+            isActive: isActive,
+            destination: {
+                if let unwrappedItem = item.wrappedValue {
+                    destination(unwrappedItem)
+                        .onAppear {
+                            // Navigation has occurred; handle it here.
+                            isActive.wrappedValue = false
+                        }
+                } else {
+                    EmptyView() // Placeholder for when there’s no item.
+                }
+            },
+            label: {
+                EmptyView() // Keeps the link invisible.
+            }
+        )
     }
-    
+
     /// Navigation view modifier
     ///
     /// Example:
