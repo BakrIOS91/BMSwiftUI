@@ -20,13 +20,13 @@ public extension String {
     ///   - formateFrom: The original date format.
     ///   - formateTo: The desired date format.
     /// - Returns: A formatted date string.
-    func formatDate(formateFrom: DateFormatter.Formats, formateTo: DateFormatter.Formats) -> String {
+    func formatDate(formateFrom: DateFormatter.Formats, formateTo: DateFormatter.Formats, locale: Locale = Locale.current) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = formateFrom.rawValue
         
         // Set the appropriate time zone
         dateFormatter.timeZone = TimeZone.current
-        dateFormatter.locale = Locale.current
+        dateFormatter.locale = locale
         
         if let date = dateFormatter.date(from: self) {
             dateFormatter.dateFormat = formateTo.rawValue
@@ -42,13 +42,13 @@ public extension String {
     ///   - formateTo: The desired date format.
     ///   - duration: The duration (in minutes) to add to the date.
     /// - Returns: A formatted date string with added duration.
-    func formatDateWithDuration(formateFrom: DateFormatter.Formats, formateTo: DateFormatter.Formats, duration: Int) -> String {
+    func formatDateWithDuration(formateFrom: DateFormatter.Formats, formateTo: DateFormatter.Formats, locale: Locale = Locale.current, duration: Int) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = formateFrom.rawValue
         
         // Set the appropriate time zone
         dateFormatter.timeZone = TimeZone.current
-        dateFormatter.locale = Locale.current
+        dateFormatter.locale = locale
         
         if let date = dateFormatter.date(from: self) {
             let modifiedDate = Calendar.current.date(byAdding: .minute, value: duration, to: date)!
