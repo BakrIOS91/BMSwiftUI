@@ -11,10 +11,25 @@ public extension Data {
         let bcf = ByteCountFormatter()
         bcf.allowedUnits = [.useMB]
         bcf.countStyle = .file
-        let string = bcf.string(fromByteCount: Int64(self.count)).replacingOccurrences(of: ",", with: ".")
-        if let double = Double(string.replacingOccurrences(of: " MB", with: "")) {
+        
+        // Get the formatted string from ByteCountFormatter
+        let formattedString = bcf.string(fromByteCount: Int64(self.count))
+        
+        // Replace Arabic decimal separator and remove "MB"
+        let cleanedString = formattedString
+            .replacingOccurrences(of: "٫", with: ".") // Replace Arabic decimal separator
+            .replacingOccurrences(of: " م.ب.", with: "") // Remove "MB" in Arabic
+            .arabicToEnglishDigits
+        
+        // Attempt to parse the cleaned string as a Double
+        if let double = Double(cleanedString) {
             return double
         }
+        
         return 0.0
+    }
+    
+    func getMBSize() -> Double {
+        return Double((Double(self.count) / 1000) / 1000).roundToDecimal(2)
     }
 }
