@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-struct WideSpacerView: View {
+public struct WideSpacerView: View {
     var axis: Axis.Set
     
     init(_ axis: Axis.Set) {
         self.axis = axis
     }
     
-    var body: some View {
+    public var body: some View {
         switch axis {
             case .horizontal:
                 HStack {
