@@ -10,7 +10,7 @@ import SwiftUI
 public struct WideSpacerView: View {
     var axis: Axis.Set
     
-    init(_ axis: Axis.Set) {
+   public init(_ axis: Axis.Set) {
         self.axis = axis
     }
     
