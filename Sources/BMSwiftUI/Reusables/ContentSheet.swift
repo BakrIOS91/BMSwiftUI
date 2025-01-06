@@ -18,6 +18,11 @@ public enum SheetBackgroundStyle {
     case transparent
 }
 
+public enum TransitionEffect {
+    case `default`
+    case fade
+}
+
 public class TransparentHostingController<Content: View>: UIHostingController<Content> {
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,8 +63,21 @@ class NonDismissablePresentationController: UIPresentationController {
 
 public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
     @Binding public var isPresented: Bool
+    var transitionEffect: TransitionEffect
     var onDismiss: () -> Void
-    public let content: Content
+    public var content: () -> Content
+    
+    init(
+        isPresented: Binding<Bool>,
+        transitionEffect: TransitionEffect,
+        onDismiss: @escaping () -> Void,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self._isPresented = isPresented
+        self.transitionEffect = transitionEffect
+        self.onDismiss = onDismiss
+        self.content = content
+    }
     
     public class Coordinator: NSObject, UIViewControllerTransitioningDelegate, UIAdaptivePresentationControllerDelegate {
         weak var sheetController: UIViewController?
@@ -104,9 +122,13 @@ public struct TransparentSheet<Content: View>: UIViewControllerRepresentable {
     public func updateUIViewController(_ uiViewController: UIViewController, context: Context){
         if isPresented {
             if context.coordinator.sheetController == nil {
-                let sheetController = TransparentHostingController(rootView: content)
+                let sheetController = TransparentHostingController(rootView: content())
                 sheetController.modalPresentationStyle = .overFullScreen
                 sheetController.view.backgroundColor = .clear // Transparent background
+                
+                // Choose the desired transition effect
+                let customTransitioningDelegate = CustomTransitioningDelegate(transitionEffect: transitionEffect)
+                sheetController.transitioningDelegate = customTransitioningDelegate
 
                 sheetController.presentationController?.delegate = context.coordinator
                 context.coordinator.sheetController = sheetController
@@ -142,6 +164,9 @@ class NonDismissableTransitionDelegate: NSObject, UIViewControllerTransitioningD
 public extension View {
     func contentSheet<Item, Destination: View>(
         item: Binding<Item?>,
+        appendInSheetContainer: Bool = true,
+        transitionEffect: TransitionEffect = .default,
+        onTabDismissEnabled: Bool = true,
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 20,
         backgroundStyle: SheetBackgroundStyle = .transparent,
@@ -155,6 +180,9 @@ public extension View {
         
         return contentSheet(
             isPresented: isActive,
+            appendInSheetContainer: appendInSheetContainer,
+            transitionEffect: transitionEffect,
+            onTabDismissEnabled: onTabDismissEnabled,
             sheetBackgroundColor: sheetBackgroundColor,
             sheetCorrnerRaduis: sheetCorrnerRaduis,
             backgroundStyle: backgroundStyle,
@@ -166,6 +194,9 @@ public extension View {
     @ViewBuilder
     func contentSheet<Content: View>(
         isPresented: Binding<Bool>,
+        appendInSheetContainer: Bool = true,
+        transitionEffect: TransitionEffect = .default,
+        onTabDismissEnabled: Bool = true,
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 20,
         backgroundStyle: SheetBackgroundStyle = .transparent,
@@ -177,29 +208,54 @@ public extension View {
             self.background(
                 TransparentSheet(
                     isPresented: isPresented,
+                    transitionEffect: transitionEffect,
                     onDismiss: onDismiss,
-                    content: SheetContainerView(
-                        isModalPresented: isPresented,
-                        sheetBackgroundStyle: backgroundStyle,
-                        sheetBackgroundColor: sheetBackgroundColor,
-                        sheetCorrnerRaduis: sheetCorrnerRaduis,
-                        content
-                    )
+                    content: {
+                        if appendInSheetContainer {
+                            SheetContainerView(
+                                isModalPresented: isPresented,
+                                onTabDismissEnabled: onTabDismissEnabled,
+                                sheetBackgroundStyle: backgroundStyle,
+                                sheetBackgroundColor: sheetBackgroundColor,
+                                sheetCorrnerRaduis: sheetCorrnerRaduis,
+                                content
+                            )
+                        } else {
+                            content()
+                        }
+                    }
                 )
             )
         case let .blured(blur, opacity):
             self.background(
                 TransparentSheet(
                     isPresented: isPresented,
+                    transitionEffect: transitionEffect,
                     onDismiss: onDismiss,
-                    content: SheetContainerView(
-                        isModalPresented: isPresented,
-                        sheetBackgroundStyle: backgroundStyle,
-                        sheetBackgroundColor: sheetBackgroundColor,
-                        sheetCorrnerRaduis: sheetCorrnerRaduis,
-                        blureEffect: blur,
-                        content
-                    )
+                    content: {
+                        if appendInSheetContainer {
+                            SheetContainerView(
+                                isModalPresented: isPresented,
+                                onTabDismissEnabled: onTabDismissEnabled,
+                                sheetBackgroundStyle: backgroundStyle,
+                                sheetBackgroundColor: sheetBackgroundColor,
+                                sheetCorrnerRaduis: sheetCorrnerRaduis,
+                                blureEffect: blur,
+                                content
+                            )
+                        } else {
+                            content()
+                                .background(
+                                    withAnimation(.easeInOut(duration: 0.3)){
+                                        BlurEffectView(
+                                            radius: blur,
+                                            opacity: opacity,
+                                            backgroundColor: .white
+                                        )
+                                    }
+                                )
+                        }
+                    }
                 )
             )
         }
@@ -214,7 +270,7 @@ public struct SheetContainerView<Content: View>: View {
     @State private var backgroundColor: Color = .white.opacity(0.01)
     @State private var sheetBackgroundStyle: SheetBackgroundStyle
     
-    
+    @State private var onTabDismissEnabled: Bool = true
     @State private var opacityLevel: CGFloat = .zero
     @State private var blureEffect: CGFloat = .zero
     var sheetBackgroundColor: Color = .white
@@ -222,6 +278,7 @@ public struct SheetContainerView<Content: View>: View {
 
     public init(
         isModalPresented: Binding<Bool>,
+        onTabDismissEnabled: Bool = true,
         sheetBackgroundStyle: SheetBackgroundStyle,
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 0,
@@ -230,6 +287,7 @@ public struct SheetContainerView<Content: View>: View {
         _ content: @escaping () -> Content
     ) {
         self._isModalPresented = isModalPresented
+        self.onTabDismissEnabled = onTabDismissEnabled
         self.sheetBackgroundStyle = sheetBackgroundStyle
         self.content = content
         self.opacityLevel = opacityLevel
@@ -261,22 +319,24 @@ public struct SheetContainerView<Content: View>: View {
                 opacity: opacityLevel,
                 backgroundColor: backgroundColor
             )
-                .onAppear {
-                    switch sheetBackgroundStyle {
-                    case .default(let opacity):
-                        backgroundColor = .black.opacity(opacity)
-                    case .blured(let blur, let opacity):
-                        backgroundColor = .black.opacity(opacity)
-                        blureEffect = blur
-                        opacityLevel = opacity
-                    case .transparent:
-                        break
-                    }
+            .onAppear {
+                switch sheetBackgroundStyle {
+                case .default(let opacity):
+                    backgroundColor = .black.opacity(opacity)
+                case .blured(let blur, let opacity):
+                    backgroundColor = .black.opacity(opacity)
+                    blureEffect = blur
+                    opacityLevel = opacity
+                case .transparent:
+                    break
                 }
+            }
                 .onTapGesture {
-                    backgroundColor = .clear
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        isModalPresented = false
+                    if onTabDismissEnabled {
+                        backgroundColor = .clear
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isModalPresented = false
+                        }
                     }
                 }
         )
