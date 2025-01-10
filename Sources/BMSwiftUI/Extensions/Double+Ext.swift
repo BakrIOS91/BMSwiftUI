@@ -44,7 +44,7 @@ public extension Double {
         return "\(formattedString) \(suffixes[suffixIndex])"
     }
     
-    func toSizeDouble() -> Double? {
+    func toSizeDouble(_ roundTo: Int = 0) -> Double? {
         let suffixes = ["B", "kB", "MB", "GB", "TB", "PB"]
         
         // Handle zero bytes
@@ -61,7 +61,7 @@ public extension Double {
             suffixIndex += 1
         }
         
-        return convertedBytes.roundToDecimal(1)
+        return convertedBytes.roundToDecimal(roundTo)
     }
     
     func roundToDecimal(_ fractionDigits: Int) -> Double {
