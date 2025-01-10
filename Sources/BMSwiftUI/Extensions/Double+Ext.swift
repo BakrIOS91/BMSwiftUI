@@ -14,7 +14,7 @@ public extension Double {
     }
     
     
-    func bytesToSizeString() -> String {
+    func bytesToSizeString(_ roundTo: Int = 0) -> String {
         // Define suffixes for different unit scales
         let suffixes = ["B", "kB", "MB", "GB", "TB", "PB"]
         
@@ -38,7 +38,7 @@ public extension Double {
         numberFormatter.minimumFractionDigits = 1
         numberFormatter.maximumFractionDigits = 1
         
-        let formattedString = numberFormatter.string(for: convertedBytes) ?? ""
+        let formattedString = numberFormatter.string(for: convertedBytes.roundToDecimal(roundTo)) ?? ""
         
         // Combine formatted number and suffix
         return "\(formattedString) \(suffixes[suffixIndex])"
