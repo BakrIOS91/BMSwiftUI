@@ -30,6 +30,12 @@ public struct BlurEffectView: View {
     let opacity: CGFloat
     let backgroundColor: Color
     
+    public init(radius: CGFloat, opacity: CGFloat, backgroundColor: Color) {
+        self.radius = radius
+        self.opacity = opacity
+        self.backgroundColor = backgroundColor
+    }
+    
     @ViewBuilder
     public var body: some View {
         ZStack {
