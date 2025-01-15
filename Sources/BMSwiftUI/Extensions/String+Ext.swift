@@ -101,11 +101,34 @@ public extension String {
     }
     
     var arabicToEnglishDigits: String {
-        let arabicDigits = ["٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9", "٫" : "."]
+        let arabicDigits = ["٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9", "٫": "."]
         var result = self
+        
+        // Check if the input contains only valid Arabic digits or the decimal point
+        let validCharacters = Set(arabicDigits.keys)
+        let inputCharacters = Set(self.map { String($0) })
+        
+        // If the input contains any invalid characters, return an empty string
+        if !inputCharacters.isSubset(of: validCharacters) {
+            return ""
+        }
+        
+        // Replace Arabic digits with English digits
         arabicDigits.forEach { arabic, english in
             result = result.replacingOccurrences(of: arabic, with: english)
         }
+        
         return result
+    }
+    
+    var permitOnlyEnglishCharacters: String {
+        // Define allowed characters (English letters, numbers, and specific special characters)
+        let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.-_")
+        
+        // Filter the input string to include only allowed characters
+        let filteredUnicodeScalars = self.unicodeScalars.filter { allowedCharacters.contains($0) }
+        
+        // Convert the filtered Unicode scalars back to a String
+        return String(String.UnicodeScalarView(filteredUnicodeScalars))
     }
 }
