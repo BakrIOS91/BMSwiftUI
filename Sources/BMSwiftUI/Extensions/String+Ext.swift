@@ -104,12 +104,14 @@ public extension String {
         let arabicDigits = ["٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9", "٫": "."]
         var result = self
         
-        // Check if the input contains only valid Arabic digits or the decimal point
-        let validCharacters = Set(arabicDigits.keys)
+        // Define allowed characters (Arabic digits, English digits, and the Arabic/English decimal point)
+        let allowedCharacters = Set(arabicDigits.keys + ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."])
+        
+        // Check if the input contains only valid digits or the decimal point
         let inputCharacters = Set(self.map { String($0) })
         
         // If the input contains any invalid characters, return an empty string
-        if !inputCharacters.isSubset(of: validCharacters) {
+        if !inputCharacters.isSubset(of: allowedCharacters) {
             return ""
         }
         
