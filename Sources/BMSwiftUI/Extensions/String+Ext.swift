@@ -104,23 +104,28 @@ public extension String {
         let arabicDigits = ["٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9", "٫": "."]
         var result = self
         
+        // Split the string into numeric and non-numeric parts
+        let numericPart = String(result.prefix { $0.isNumber || String($0) == "٫" || String($0) == "." })
+        let nonNumericPart = String(result.dropFirst(numericPart.count))
+        
         // Define allowed characters (Arabic digits, English digits, and the Arabic/English decimal point)
         let allowedCharacters = Set(arabicDigits.keys + ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."])
         
-        // Check if the input contains only valid digits or the decimal point
-        let inputCharacters = Set(self.map { String($0) })
+        // Check if the numeric part contains only valid digits or the decimal point
+        let inputCharacters = Set(numericPart.map { String($0) })
         
-        // If the input contains any invalid characters, return an empty string
+        // If the numeric part contains any invalid characters, return an empty string
         if !inputCharacters.isSubset(of: allowedCharacters) {
             return ""
         }
         
-        // Replace Arabic digits with English digits
+        // Replace Arabic digits with English digits in the numeric part
         arabicDigits.forEach { arabic, english in
             result = result.replacingOccurrences(of: arabic, with: english)
         }
         
-        return result
+        // Combine the converted numeric part with the non-numeric part
+        return numericPart.arabicToEnglishDigits + nonNumericPart
     }
     
     var permitOnlyEnglishCharacters: String {
