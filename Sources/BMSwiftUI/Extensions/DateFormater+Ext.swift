@@ -15,7 +15,7 @@ public extension DateFormatter {
     
     /// Enumeration defining various date formats for easy reference.
     enum Formats: String {
-        case yyyyMMddTHHmmssZ = "yyyy-MM-dd'T'HH:mm:ssZ"
+        case yyyyMMddTHHmmssZ = "yyyy-MM-ddTHH:mm:ssZ"
         case yyyyMMddTHHmmssSSS = "yyyy-MM-dd'T'HH:mm:ss.SSS"
         case yyyyMMddTHHmmssSSSZ = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
         case yyyyMMddTHHmmssSSSZz = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
@@ -23,7 +23,6 @@ public extension DateFormatter {
         case yyyyMMddhhmma = "yyyy-MM-dd hh:mm a"
         case yyyyMMddhhmmss = "yyyy-MM-dd HH:mm:ss"
         case yyyyMMddhhmmsszz = "yyyy-MM-dd HH:mm:ss Z"
-        case yyyyMMddTHHmmssZ = "yyyy-MM-ddTHH:mm:ssZ"
         case yyyyMMdd = "yyyy-MM-dd"
         case ddMMyyyy = "dd-MM-yyyy"
         case dMMM = "d MMM"
