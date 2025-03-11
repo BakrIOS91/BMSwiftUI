@@ -27,7 +27,7 @@ let package = Package(
             path: "Sources",
             swiftSettings: [
                 .define("SPM"),
-                .unsafeFlags(["-enable-library-evolution"])  // Enable library evolution
+                .enableExperimentalFeature("LibraryEvolution") // Official Swift 5.3+ flag
             ]
         ),
         .testTarget(
