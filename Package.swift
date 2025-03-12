@@ -24,11 +24,7 @@ let package = Package(
         .target(
             name: "BMSwiftUI",
             dependencies: [],
-            path: "Sources",
-            swiftSettings: [
-                .define("SPM"),
-                .enableExperimentalFeature("LibraryEvolution") // Official Swift 5.3+ flag
-            ]
+            path: "Sources"
         ),
         .testTarget(
             name: "BMSwiftUITests",
