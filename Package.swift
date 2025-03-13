@@ -24,7 +24,8 @@ let package = Package(
         .target(
             name: "BMSwiftUI",
             dependencies: [],
-            path: "Sources"
+            path: "Sources",
+            swiftSettings: [.define("BUILD_LIBRARY_FOR_DISTRIBUTION")]
         ),
         .testTarget(
             name: "BMSwiftUITests",
