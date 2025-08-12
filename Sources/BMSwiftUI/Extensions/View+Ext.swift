@@ -305,42 +305,19 @@ public extension View {
     ///     - `.magicTap`: A system-provided gesture that performs a common action, such as answering calls or playing/pausing media.
     /// - Returns: A view with extended accessibility features.
     func setReader(
-        labelKey: String,                  // Mandatory label key for accessibility
-        hintKey: String? = nil,            // Optional hint key for additional context
-        valueKey: String? = nil,           // Optional value key for representing current value
+        labelKey: LocalizedStringKey,                  // Mandatory label key for accessibility
+        hintKey: LocalizedStringKey = "",            // Optional hint key for additional context
+        valueKey: LocalizedStringKey = "",           // Optional value key for representing current value
         traits: AccessibilityTraits = [],   // Accessibility traits to define behavior
         actionKind: AccessibilityActionKind = .default, // Accessibility Action Kind
-        action: (() -> Void)? = nil        // Optional custom action
+        action: @escaping (() -> Void) = {}        // Optional custom action
     ) -> some View {
-        // Start with the current view
-        var modifiedView = self
-        
-        // Accessibility Label (Mandatory)
-        modifiedView = modifiedView
-            .accessibilityLabel(LocalizedStringKey(labelKey)) as! Self
-        
-        // Accessibility Hint (Optional)
-        if let hintKey = hintKey {
-            modifiedView = modifiedView
-                .accessibilityHint(LocalizedStringKey(hintKey)) as! Self
-        }
-        
-        // Accessibility Value (Optional)
-        if let valueKey = valueKey {
-            modifiedView = modifiedView
-                .accessibilityValue(LocalizedStringKey(valueKey)) as! Self
-        }
-        
-        // Accessibility Traits (Defaults to [])
-        modifiedView = modifiedView.accessibilityAddTraits(traits) as! Self
-        
-        // Accessibility Action (Optional)
-        if let action = action {
-            modifiedView = modifiedView
-                .accessibilityAction(actionKind, action) as! Self
-        }
-        
-        return modifiedView
+        return self
+            .accessibilityLabel(labelKey)
+            .accessibilityHint(hintKey)
+            .accessibilityValue(valueKey)
+            .accessibilityAddTraits(traits)
+            .accessibilityAction(actionKind, action)
     }
 }
 
