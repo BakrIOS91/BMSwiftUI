@@ -8,17 +8,17 @@
 
 import SwiftUI
 
-extension View {
+public extension View {
     func onFirstAppear(perform action: @escaping () -> Void) -> some View {
         modifier(FirstAppearModifier(action: action))
     }
 }
 
-private struct FirstAppearModifier: ViewModifier {
+public struct FirstAppearModifier: ViewModifier {
     @State private var hasAppeared = false
     let action: () -> Void
 
-    func body(content: Content) -> some View {
+    public func body(content: Content) -> some View {
         content.onAppear {
             if !hasAppeared {
                 hasAppeared = true
