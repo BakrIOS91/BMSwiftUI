@@ -7,39 +7,23 @@
 //
 
 import SwiftUI
-public struct OnFirstAppear: ViewModifier {
-    private let perform: () -> Void
-    
-    @Binding private var firstTime: Bool
-    
-    public init(
-        firstTime: Binding<Bool>,
-        perform: @escaping () -> Void
-    ) {
-        self.perform = perform
-        self._firstTime = firstTime
-    }
-    
-    public func body(content: Content) -> some View {
-        content.onAppear {
-            if firstTime {
-                firstTime = false
-                perform()
-            }
-        }
+
+extension View {
+    func onFirstAppear(perform action: @escaping () -> Void) -> some View {
+        modifier(FirstAppearModifier(action: action))
     }
 }
 
-public extension View {
-    func onFirstAppear (
-        firstTime: Binding<Bool>,
-        perform: @escaping () -> Void
-    ) -> some View {
-        modifier(
-            OnFirstAppear(
-                firstTime: firstTime,
-                perform: perform
-            )
-        )
+private struct FirstAppearModifier: ViewModifier {
+    @State private var hasAppeared = false
+    let action: () -> Void
+
+    func body(content: Content) -> some View {
+        content.onAppear {
+            if !hasAppeared {
+                hasAppeared = true
+                action()
+            }
+        }
     }
 }
