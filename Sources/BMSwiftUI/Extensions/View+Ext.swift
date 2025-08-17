@@ -305,7 +305,8 @@ public extension View {
     ///     - `.magicTap`: A system-provided gesture that performs a common action, such as answering calls or playing/pausing media.
     /// - Returns: A view with extended accessibility features.
     func setReader(
-        labelKey: LocalizedStringKey,                  // Mandatory label key for accessibility
+        hideAccessibility: Bool = false,
+        labelKey: LocalizedStringKey = "",                  // Optional labelkey for accessibility
         hintKey: LocalizedStringKey = "",            // Optional hint key for additional context
         valueKey: LocalizedStringKey = "",           // Optional value key for representing current value
         traits: AccessibilityTraits = [],   // Accessibility traits to define behavior
@@ -317,6 +318,7 @@ public extension View {
             .accessibilityHint(hintKey)
             .accessibilityValue(valueKey)
             .accessibilityAddTraits(traits)
+            .accessibilityHidden(hideAccessibility)
             .accessibilityAction(actionKind, action)
     }
 }
