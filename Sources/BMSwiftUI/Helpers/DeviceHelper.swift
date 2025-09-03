@@ -6,9 +6,9 @@
 //
 
 import SwiftUI
-#warning("Temp Disable untill Finalize")
+
 public struct DeviceHelper {
-    static func getScalingFactor() -> CGFloat {
+    public static func getScalingFactor() -> CGFloat {
         let nativeWidth = UIScreen.main.nativeBounds.width
         
         // Set scaling factor based on actual screen resolution in pixels
