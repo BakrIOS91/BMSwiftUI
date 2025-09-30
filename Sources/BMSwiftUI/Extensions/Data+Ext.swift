@@ -19,7 +19,7 @@ public extension Data {
         let cleanedString = formattedString
             .replacingOccurrences(of: "٫", with: ".") // Replace Arabic decimal separator
             .replacingOccurrences(of: " م.ب.", with: "") // Remove "MB" in Arabic
-            .arabicToEnglishDigits
+            .convertedDigits(.english)
         
         // Attempt to parse the cleaned string as a Double
         if let double = Double(cleanedString) {
