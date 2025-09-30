@@ -100,18 +100,28 @@ public extension String {
         return trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
-    var arabicToEnglishDigits: String {
-        let arabicToEnglishMap: [Character: Character] = [
-               "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
-               "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
-               "٫": "."
-           ]
-
-           // Transform the string by replacing Arabic digits with English ones
-           return self.map { char in
-               String(arabicToEnglishMap[char] ?? char) // Convert Character to String
-           }.joined()
+    enum DigitLanguage {
+        case english
+        case arabic
     }
+
+    func convertedDigits(to target: DigitLanguage) -> String {
+        let arabicToEnglish: [Character: Character] = [
+            "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
+            "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
+            "٫": "."
+        ]
+        
+        let englishToArabic: [Character: Character] = [
+            "0": "٠", "1": "١", "2": "٢", "3": "٣", "4": "٤",
+            "5": "٥", "6": "٦", "7": "٧", "8": "٨", "9": "٩",
+            ".": "٫"
+        ]
+        
+        let map = target == .english ? arabicToEnglish : englishToArabic
+        
+        return self.map { map[$0] ?? $0 }.reduce("") { $0 + String($1) }
+    }a
     
     var permitOnlyEnglishCharacters: String {
         // Define allowed characters (English letters, numbers, and specific special characters)
