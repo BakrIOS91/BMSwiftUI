@@ -121,7 +121,7 @@ public extension String {
         let map = target == .english ? arabicToEnglish : englishToArabic
         
         return self.map { map[$0] ?? $0 }.reduce("") { $0 + String($1) }
-    }a
+    }
     
     var permitOnlyEnglishCharacters: String {
         // Define allowed characters (English letters, numbers, and specific special characters)
