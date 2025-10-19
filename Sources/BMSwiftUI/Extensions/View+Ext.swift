@@ -256,23 +256,34 @@ public extension View {
         left: (() -> Void)? = nil,
         right: (() -> Void)? = nil
     ) -> some View {
-        return self.gesture(DragGesture(minimumDistance: 0, coordinateSpace: .local)
-            .onEnded({ value in
-                // Check the current layout direction
-                let isRTL = UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
-                
-                // Determine the swipe direction
-                if value.translation.width < 0 {
-                    isRTL ? right?() : left?()  // Invert left and right for RTL
+        self.simultaneousGesture(
+            DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                .onEnded { value in
+                    let isRTL = UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
+
+                    let horizontalAmount = value.translation.width
+                    let verticalAmount = value.translation.height
+
+                    if abs(horizontalAmount) > abs(verticalAmount) {
+                        // Horizontal swipe
+                        if horizontalAmount < -50 {
+                            isRTL ? right?() : left?()
+                        } else if horizontalAmount > 50 {
+                            isRTL ? left?() : right?()
+                        }
+                    } else {
+                        // Vertical swipe
+                        if verticalAmount < -50 {
+                            up?()
+                        } else if verticalAmount > 50 {
+                            down?()
+                        }
+                    }
                 }
-                if value.translation.width > 0 {
-                    isRTL ? left?() : right?()  // Invert left and right for RTL
-                }
-                if value.translation.height < 0 { up?() }
-                if value.translation.height > 0 { down?() }
-            }))
+        )
     }
 }
+
 
 
 // Accessibility features extension for View
