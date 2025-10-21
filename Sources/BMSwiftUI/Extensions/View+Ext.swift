@@ -251,6 +251,7 @@ public extension View {
 
 public extension View {
     func swipe(
+        isRTL: Bool? = nil,
         up: (() -> Void)? = nil,
         down: (() -> Void)? = nil,
         left: (() -> Void)? = nil,
@@ -259,7 +260,7 @@ public extension View {
         self.simultaneousGesture(
             DragGesture(minimumDistance: 20, coordinateSpace: .local)
                 .onEnded { value in
-                    let isRTL = UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
+                    let isRTL = isRTL ?? (UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft)
 
                     let horizontalAmount = value.translation.width
                     let verticalAmount = value.translation.height
