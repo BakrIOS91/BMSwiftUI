@@ -284,7 +284,7 @@ public struct SheetContainerView<Content: View>: View {
     @State private var opacityLevel: CGFloat = .zero
     @State private var blureEffect: CGFloat = .zero
 
-    @State private var sheetShadowStyle: SheetShadowStyle?
+    @State private var sheetShadowStyle: SheetShadowStyle = .default
 
     var sheetBackgroundColor: Color = .white
     var sheetCorrnerRadius: CGFloat = 0
@@ -327,10 +327,10 @@ public struct SheetContainerView<Content: View>: View {
                 sheetBackgroundColor
                     .setCornerRadius(sheetCorrnerRadius)
                     .shadow(
-                        color: sheetShadowStyle?.color ?? .clear,
-                        radius: sheetShadowStyle?.radius ?? 0,
-                        x: sheetShadowStyle?.x ?? 0,
-                        y: sheetShadowStyle?.y ?? 0
+                        color: sheetShadowStyle.color ?? .clear,
+                        radius: sheetShadowStyle.radius ?? 0,
+                        x: sheetShadowStyle.x ?? 0,
+                        y: sheetShadowStyle.y ?? 0
                     )
             )
             
