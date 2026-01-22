@@ -171,6 +171,8 @@ public extension View {
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 20,
         backgroundStyle: SheetBackgroundStyle = .transparent,
+        sheetShadowColor: Color = .white,
+        sheetShadowRadius: CGFloat = 0,
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder contentView: @escaping (Item) -> Destination
     ) -> some View {
@@ -188,6 +190,8 @@ public extension View {
             sheetBackgroundColor: sheetBackgroundColor,
             sheetCorrnerRaduis: sheetCorrnerRaduis,
             backgroundStyle: backgroundStyle,
+            sheetShadowColor: sheetShadowColor,
+            sheetShadowRadius: sheetShadowRadius,
             onDismiss: onDismiss
         ) {
             item.wrappedValue.map(contentView)
@@ -203,6 +207,8 @@ public extension View {
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 20,
         backgroundStyle: SheetBackgroundStyle = .transparent,
+        sheetShadowColor: Color = .white,
+        sheetShadowRadius: CGFloat = 0,
         onDismiss: @escaping () -> Void = {},
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
@@ -221,7 +227,9 @@ public extension View {
                                 backgroundColor: backgroundColor,
                                 sheetBackgroundStyle: backgroundStyle,
                                 sheetBackgroundColor: sheetBackgroundColor,
-                                sheetCorrnerRaduis: sheetCorrnerRaduis,
+                                sheetCorrnerRadius: sheetCorrnerRaduis,
+                                sheetShadowColor: sheetShadowColor,
+                                sheetShadowRadius: sheetShadowRadius,
                                 content
                             )
                         } else {
@@ -244,8 +252,10 @@ public extension View {
                                 backgroundColor: backgroundColor,
                                 sheetBackgroundStyle: backgroundStyle,
                                 sheetBackgroundColor: sheetBackgroundColor,
-                                sheetCorrnerRaduis: sheetCorrnerRaduis,
+                                sheetCorrnerRadius: sheetCorrnerRaduis,
                                 blureEffect: blur,
+                                sheetShadowColor: sheetShadowColor,
+                                sheetShadowRadius: sheetShadowRadius,
                                 content
                             )
                         } else {
@@ -278,8 +288,12 @@ public struct SheetContainerView<Content: View>: View {
     @State private var onTabDismissEnabled: Bool = true
     @State private var opacityLevel: CGFloat = .zero
     @State private var blureEffect: CGFloat = .zero
+
+    @State private var sheetShadowColor: Color = .clear
+    @State private var sheetShadowRadius: CGFloat = 0
+
     var sheetBackgroundColor: Color = .white
-    var sheetCorrnerRaduis: CGFloat = 0
+    var sheetCorrnerRadius: CGFloat = 0
 
     public init(
         isModalPresented: Binding<Bool>,
@@ -287,9 +301,11 @@ public struct SheetContainerView<Content: View>: View {
         backgroundColor: Color = .white.opacity(0.01),
         sheetBackgroundStyle: SheetBackgroundStyle,
         sheetBackgroundColor: Color = .white,
-        sheetCorrnerRaduis: CGFloat = 0,
+        sheetCorrnerRadius: CGFloat = 0,
         opacityLevel: CGFloat = 0.1,
         blureEffect: CGFloat = 1,
+        sheetShadowColor: Color = .white,
+        sheetShadowRadius: CGFloat = 0,
         _ content: @escaping () -> Content
     ) {
         self._isModalPresented = isModalPresented
@@ -300,8 +316,10 @@ public struct SheetContainerView<Content: View>: View {
         self.opacityLevel = opacityLevel
         self.blureEffect = blureEffect
         self.sheetBackgroundColor = sheetBackgroundColor
-        self.sheetCorrnerRaduis = sheetCorrnerRaduis
-        
+        self.sheetCorrnerRadius = sheetCorrnerRadius
+        self.sheetShadowRadius = sheetShadowRadius
+        self.sheetShadowColor = sheetShadowColor
+
         print(sheetBackgroundColor,opacityLevel,blureEffect)
     }
     
@@ -315,8 +333,8 @@ public struct SheetContainerView<Content: View>: View {
             }
             .background(
                 sheetBackgroundColor
-                    .setCornerRadius(sheetCorrnerRaduis)
-                    .shadow(radius: 2)
+                    .setCornerRadius(sheetCorrnerRadius)
+                    .shadow(color: sheetShadowColor, radius: sheetShadowRadius)
             )
             
         }
@@ -347,6 +365,33 @@ public struct SheetContainerView<Content: View>: View {
         .ignoresSafeArea()
         
     }
+}
+
+@available(iOS 17.0, *)
+#Preview {
+    @Previewable @State var showSheet: Bool = false
+
+    VStack {
+        Button{
+            showSheet = true
+        } label: {
+            Text("show sheet")
+        }
+    }
+    .contentSheet(
+        isPresented: $showSheet,
+        backgroundColor: .red,
+        sheetBackgroundColor: .blue,
+        sheetCorrnerRaduis: 20,
+        backgroundStyle: .default(opacity: 0.5)) {
+            print("On Dismiss")
+        } content: {
+            VStack {
+                Text("sheet Content")
+            }
+            .setFrame(height: 300, alignment: .center)
+        }
+
 }
 
 #endif
