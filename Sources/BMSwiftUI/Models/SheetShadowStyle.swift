@@ -20,6 +20,18 @@ public struct SheetShadowStyle {
         case y
     }
 
+    public init(
+        color: Color? = nil,
+        radius: CGFloat? = nil,
+        x: CGFloat? = nil,
+        y: CGFloat? = nil
+    ) {
+        self.color = color
+        self.radius = radius
+        self.x = x
+        self.y = y
+    }
+
     public static let `default`: SheetShadowStyle = .init(
         color: .clear,
         radius: 0,
