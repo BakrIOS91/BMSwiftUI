@@ -167,6 +167,7 @@ public extension View {
         appendInSheetContainer: Bool = true,
         transitionEffect: TransitionEffect = .default,
         onTabDismissEnabled: Bool = true,
+        backgroundColor: Color = .white.opacity(0.01),
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 20,
         backgroundStyle: SheetBackgroundStyle = .transparent,
@@ -183,6 +184,7 @@ public extension View {
             appendInSheetContainer: appendInSheetContainer,
             transitionEffect: transitionEffect,
             onTabDismissEnabled: onTabDismissEnabled,
+            backgroundColor: backgroundColor,
             sheetBackgroundColor: sheetBackgroundColor,
             sheetCorrnerRaduis: sheetCorrnerRaduis,
             backgroundStyle: backgroundStyle,
@@ -197,6 +199,7 @@ public extension View {
         appendInSheetContainer: Bool = true,
         transitionEffect: TransitionEffect = .default,
         onTabDismissEnabled: Bool = true,
+        backgroundColor: Color = .white.opacity(0.01),
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 20,
         backgroundStyle: SheetBackgroundStyle = .transparent,
@@ -215,6 +218,7 @@ public extension View {
                             SheetContainerView(
                                 isModalPresented: isPresented,
                                 onTabDismissEnabled: onTabDismissEnabled,
+                                backgroundColor: backgroundColor,
                                 sheetBackgroundStyle: backgroundStyle,
                                 sheetBackgroundColor: sheetBackgroundColor,
                                 sheetCorrnerRaduis: sheetCorrnerRaduis,
@@ -237,6 +241,7 @@ public extension View {
                             SheetContainerView(
                                 isModalPresented: isPresented,
                                 onTabDismissEnabled: onTabDismissEnabled,
+                                backgroundColor: backgroundColor,
                                 sheetBackgroundStyle: backgroundStyle,
                                 sheetBackgroundColor: sheetBackgroundColor,
                                 sheetCorrnerRaduis: sheetCorrnerRaduis,
@@ -279,6 +284,7 @@ public struct SheetContainerView<Content: View>: View {
     public init(
         isModalPresented: Binding<Bool>,
         onTabDismissEnabled: Bool = true,
+        backgroundColor: Color = .white.opacity(0.01),
         sheetBackgroundStyle: SheetBackgroundStyle,
         sheetBackgroundColor: Color = .white,
         sheetCorrnerRaduis: CGFloat = 0,
@@ -288,6 +294,7 @@ public struct SheetContainerView<Content: View>: View {
     ) {
         self._isModalPresented = isModalPresented
         self.onTabDismissEnabled = onTabDismissEnabled
+        self.backgroundColor = backgroundColor
         self.sheetBackgroundStyle = sheetBackgroundStyle
         self.content = content
         self.opacityLevel = opacityLevel
