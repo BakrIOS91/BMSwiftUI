@@ -284,10 +284,10 @@ public struct SheetContainerView<Content: View>: View {
     @State private var opacityLevel: CGFloat = .zero
     @State private var blureEffect: CGFloat = .zero
 
-    @State private var sheetShadowStyle: SheetShadowStyle = .default
+    private var sheetShadowStyle: SheetShadowStyle = .default
 
-    var sheetBackgroundColor: Color = .white
-    var sheetCorrnerRadius: CGFloat = 0
+    private var sheetBackgroundColor: Color = .white
+    private var sheetCorrnerRadius: CGFloat = 0
 
     public init(
         isModalPresented: Binding<Bool>,
