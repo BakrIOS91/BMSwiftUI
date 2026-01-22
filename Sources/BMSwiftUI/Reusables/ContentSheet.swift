@@ -314,31 +314,28 @@ public struct SheetContainerView<Content: View>: View {
             
         }
         .background(
-            BlurEffectView(
-                radius: blureEffect,
-                opacity: opacityLevel,
-                backgroundColor: backgroundColor
-            )
-            .onAppear {
+            Group{
                 switch sheetBackgroundStyle {
-                case .default(let opacity):
-                    backgroundColor = .black.opacity(opacity)
-                case .blured(let blur, let opacity):
-                    backgroundColor = .black.opacity(opacity)
-                    blureEffect = blur
-                    opacityLevel = opacity
+                case let .default(opacity: opacity):
+                    backgroundColor.opacity(opacity)
+                case let .blured(blur: blur, opacity: opacity):
+                    BlurEffectView(
+                        radius: blur,
+                        opacity: opacity,
+                        backgroundColor: backgroundColor
+                    )
                 case .transparent:
-                    break
+                    backgroundColor.opacity(0)
                 }
             }
-                .onTapGesture {
-                    if onTabDismissEnabled {
-                        backgroundColor = .clear
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            isModalPresented = false
-                        }
+            .onTapGesture {
+                if onTabDismissEnabled {
+                    backgroundColor = .clear
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        isModalPresented = false
                     }
                 }
+            }
         )
         .ignoresSafeArea()
         
