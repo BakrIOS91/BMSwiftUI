@@ -1,7 +1,9 @@
 // swift-tools-version: 5.9
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
 import PackageDescription
+
+#if canImport(CompilerPluginSupport)
+import CompilerPluginSupport
+#endif
 
 let package = Package(
     name: "BMSwiftUI",
@@ -10,25 +12,30 @@ let package = Package(
         .macOS(.v11),
     ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
-        .library(
-            name: "BMSwiftUI",
-            targets: ["BMSwiftUI"]),
+        .library(name: "BMSwiftUI", targets: ["BMSwiftUI"]),
     ],
     dependencies: [
-        // Add your dependencies here
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
+        .macro(
+            name: "BMSwiftUIMacros",
+            dependencies: [
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+            ]
+        ),
         .target(
             name: "BMSwiftUI",
-            dependencies: [],
-            path: "Sources",
+            dependencies: ["BMSwiftUIMacros"],
             swiftSettings: [.define("BUILD_LIBRARY_FOR_DISTRIBUTION")]
         ),
         .testTarget(
             name: "BMSwiftUITests",
-            dependencies: ["BMSwiftUI"]),
+            dependencies: [
+                "BMSwiftUI",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+            ]
+        ),
     ]
 )
