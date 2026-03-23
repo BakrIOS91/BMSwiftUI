@@ -15,6 +15,24 @@ public struct PreferencesMacro: MemberMacro, ExtensionMacro {
         
         let members = classDecl.memberBlock.members
         
+        let modifiers = classDecl.modifiers.map { $0.as(DeclModifierSyntax.self)?.name.text ?? "" }
+        let isPublic = modifiers.contains("public") || modifiers.contains("open")
+        let isFilePrivate = modifiers.contains("fileprivate")
+        let isPrivate = modifiers.contains("private")
+
+        let baseAccess: String
+        if isPublic {
+            baseAccess = "public"
+        } else if isFilePrivate {
+            baseAccess = "fileprivate"
+        } else if isPrivate {
+            baseAccess = "private"
+        } else {
+            baseAccess = "" // internal
+        }
+        
+        let space = { (s: String) in s.isEmpty ? "" : s + " " }
+
         var results: [DeclSyntax] = []
         
         // Add shared property if not exists
@@ -29,7 +47,7 @@ public struct PreferencesMacro: MemberMacro, ExtensionMacro {
         }
         
         if !hasShared {
-            results.append("public static let shared = \(raw: classDecl.name.text)()")
+            results.append("\(raw: space(baseAccess))static let shared = \(raw: classDecl.name.text)()")
         }
         
         // Add preferencesChangedSubject if not exists
@@ -44,17 +62,8 @@ public struct PreferencesMacro: MemberMacro, ExtensionMacro {
         }
         
         if !hasSubject {
-            results.append("public let preferencesChangedSubject = Combine.PassthroughSubject<AnyKeyPath, Never>()")
+            results.append("\(raw: space(baseAccess))let preferencesChangedSubject = Combine.PassthroughSubject<AnyKeyPath, Never>()")
         }
-        
-        // Add extension to Preference
-        results.append("""
-            extension Preference {
-                public init(_ keyPath: ReferenceWritableKeyPath<\(raw: classDecl.name.text), Value>) {
-                    self.init(keyPath, store: .shared)
-                }
-            }
-            """)
         
         return results
     }

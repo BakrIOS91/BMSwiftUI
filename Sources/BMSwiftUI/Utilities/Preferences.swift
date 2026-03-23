@@ -102,9 +102,9 @@ public struct Preference<Value>: DynamicProperty {
 ///
 /// You can use this class directly for simple needs or use the `@Preferences` macro
 /// to create your own specialized preference stores.
-public final class Preferences: PreferencesStore {
+public final class SharedPreferences: PreferencesStore {
     /// The shared singleton instance.
-    public static let shared = Preferences()
+    public static let shared = SharedPreferences()
     
     /// The subject for change notifications.
     public let preferencesChangedSubject = PassthroughSubject<AnyKeyPath, Never>()
@@ -119,8 +119,8 @@ public final class Preferences: PreferencesStore {
 
 extension Preference {
     /// Initializes the property wrapper with a key path from the default `Preferences` store.
-    /// - Parameter keyPath: The key path to the property in `Preferences.shared`.
-    public init(_ keyPath: ReferenceWritableKeyPath<Preferences, Value>) {
+    /// - Parameter keyPath: The key path to the property in `SharedPreferences.shared`.
+    public init(_ keyPath: ReferenceWritableKeyPath<SharedPreferences, Value>) {
         self.init(keyPath, store: .shared)
     }
 }
