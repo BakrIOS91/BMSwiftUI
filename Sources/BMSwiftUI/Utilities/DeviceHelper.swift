@@ -10,6 +10,7 @@ import SwiftUI
 public struct DeviceHelper {
     /// Returns a scaling factor relative to iPhone 14 width (390pt).
     public static func getScalingFactor() -> CGFloat {
+        #if os(iOS)
         let idiom = UIDevice.current.userInterfaceIdiom
         
         if idiom == .pad {
@@ -23,5 +24,8 @@ public struct DeviceHelper {
         let scale = screenWidth / referenceWidth
         
         return min(scale, 1.1)
+        #else
+        return 1.0
+        #endif
     }
 }

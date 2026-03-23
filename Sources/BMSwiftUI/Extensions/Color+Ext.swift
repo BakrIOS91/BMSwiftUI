@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+#endif
+
 public extension Color {
     
     /// Creates a SwiftUI `Color` from a single hexadecimal string.
@@ -32,6 +36,7 @@ public extension Color {
         self = color
     }
     
+    #if os(iOS)
     /// Creates a SwiftUI `Color` that automatically adapts to the system's
     /// light or dark appearance using two hex strings.
     ///
@@ -71,6 +76,7 @@ public extension Color {
             }
         })
     }
+    #endif
     
     // MARK: - Private helpers
     
@@ -79,10 +85,16 @@ public extension Color {
     /// - Parameter hex: Hex string to parse.
     /// - Returns: A `Color` if valid, otherwise `nil`.
     private static func parseHexColor(_ hex: String) -> Color? {
+        #if os(iOS)
         guard let uiColor = parseHexUIColor(hex) else { return nil }
         return Color(uiColor)
+        #else
+        // Fallback for non-iOS platforms or use a different parsing logic
+        return nil 
+        #endif
     }
     
+    #if os(iOS)
     /// Parses a hex string into a UIKit `UIColor`.
     ///
     /// - Parameter hex: Hex string to parse (must be 6 characters after optional `#` removal).
@@ -112,6 +124,7 @@ public extension Color {
             alpha: 1.0
         )
     }
+    #endif
     
     /// Converts a 2-character hex string into an integer value (0–255).
     ///

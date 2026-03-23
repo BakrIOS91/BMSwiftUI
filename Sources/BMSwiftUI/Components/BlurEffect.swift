@@ -6,6 +6,9 @@
 //
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+
 public struct BlurEffect: UIViewRepresentable {
 
     public func makeUIView(context: Context) -> UIVisualEffectView {
@@ -45,3 +48,4 @@ public struct BlurEffectView: View {
     }
     
 }
+#endif

@@ -234,11 +234,13 @@ public extension View {
         return self.frame(width: width * scalingFactor, alignment: alignment)
     }
     
+    #if os(iOS)
     // Set corner radius dynamically
     func setCornerRadius(_ radius: CGFloat, corners: UIRectCorner = .allCorners) -> some View {
         let scalingFactor = DeviceHelper.getScalingFactor()
         return self.cornerRadius(radius * scalingFactor, corners: corners)
     }
+    #endif
     
     func setPadding(_ padding: CGFloat = 20) -> some View {
         self.padding(padding * DeviceHelper.getScalingFactor())
@@ -260,7 +262,13 @@ public extension View {
         self.simultaneousGesture(
             DragGesture(minimumDistance: 20, coordinateSpace: .local)
                 .onEnded { value in
-                    let isRTL = isRTL ?? (UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft)
+                    let isRTL = isRTL ?? {
+                        #if os(iOS)
+                        return UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
+                        #else
+                        return false
+                        #endif
+                    }()
 
                     let horizontalAmount = value.translation.width
                     let verticalAmount = value.translation.height

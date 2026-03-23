@@ -7,6 +7,9 @@
 //
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+
 public struct NavigationBarModifier: ViewModifier {
     private var backgroundColor: UIColor
     private var foregroundColor: UIColor
@@ -41,6 +44,9 @@ public struct NavigationBarModifier: ViewModifier {
                 appearance.doneButtonAppearance = buttonAppearance
                 
                 UINavigationBar.appearance().standardAppearance = appearance
+                UserDefault("kPreviewLocale", container: .standard).wrappedValue = nil // Dummy for testing if needed
+                
+                UINavigationBar.appearance().standardAppearance = appearance
                 UINavigationBar.appearance().scrollEdgeAppearance = appearance
                 UINavigationBar.appearance().compactAppearance = appearance
             }
@@ -52,4 +58,5 @@ public extension View {
         self.modifier(NavigationBarModifier(backgroundColor: backgroundColor, foregroundColor: foregroundColor, backArrowColor: backArrowColor))
     }
 }
+#endif
 

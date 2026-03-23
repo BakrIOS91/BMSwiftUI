@@ -7,6 +7,9 @@
 
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+
 public extension View {
     func gestureDisabledNavigation() -> some View {
         self.background(DisableSwipeBackGesture())
@@ -24,3 +27,4 @@ public struct DisableSwipeBackGesture: UIViewControllerRepresentable {
         uiViewController.navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
 }
+#endif

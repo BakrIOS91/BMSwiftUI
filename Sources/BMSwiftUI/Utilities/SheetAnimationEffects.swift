@@ -6,6 +6,8 @@
 //
 
 import Foundation
+
+#if os(iOS)
 import UIKit
 
 public final class CustomTransitioningDelegate: NSObject, UIViewControllerTransitioningDelegate {
@@ -84,3 +86,4 @@ public class FadeOutAnimator: NSObject, UIViewControllerAnimatedTransitioning {
         }
     }
 }
+#endif
