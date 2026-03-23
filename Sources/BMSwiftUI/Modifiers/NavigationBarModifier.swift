@@ -44,7 +44,7 @@ public struct NavigationBarModifier: ViewModifier {
                 appearance.doneButtonAppearance = buttonAppearance
                 
                 UINavigationBar.appearance().standardAppearance = appearance
-                UserDefault("kPreviewLocale", container: .standard).wrappedValue = nil // Dummy for testing if needed
+                UserDefault<Locale?>("kPreviewLocale", container: .standard).wrappedValue = nil // Dummy for testing if needed
                 
                 UINavigationBar.appearance().standardAppearance = appearance
                 UINavigationBar.appearance().scrollEdgeAppearance = appearance

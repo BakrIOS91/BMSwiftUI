@@ -117,6 +117,14 @@ public final class Preferences: PreferencesStore {
     public var previewLocale: Locale?
 }
 
+extension Preference {
+    /// Initializes the property wrapper with a key path from the default `Preferences` store.
+    /// - Parameter keyPath: The key path to the property in `Preferences.shared`.
+    public init(_ keyPath: ReferenceWritableKeyPath<Preferences, Value>) {
+        self.init(keyPath, store: .shared)
+    }
+}
+
 
 
 

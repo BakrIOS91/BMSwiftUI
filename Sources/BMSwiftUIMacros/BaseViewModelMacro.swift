@@ -63,33 +63,92 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             return funcDecl.name.text == "trigger"
         }
         
-        if !hasState {
-            context.diagnose(Diagnostic(node: Syntax(node), message: MacroDiagnostic.missingMember("State")))
+        let isFinal = classDecl.modifiers.contains { modifier in
+            guard let name = modifier.as(DeclModifierSyntax.self)?.name.text else { return false }
+            return name == "final"
         }
-        if !hasAction {
-            context.diagnose(Diagnostic(node: Syntax(node), message: MacroDiagnostic.missingMember("Action")))
-        }
-        if !hasTrigger {
-            context.diagnose(Diagnostic(node: Syntax(node), message: MacroDiagnostic.missingMember("trigger(_:)")))
+        
+        let modifiers = classDecl.modifiers.map { $0.as(DeclModifierSyntax.self)?.name.text ?? "" }
+        let isPublic = modifiers.contains("public")
+        let isOpen = modifiers.contains("open")
+        let isFilePrivate = modifiers.contains("fileprivate")
+        let isPrivate = modifiers.contains("private")
+
+        let baseAccess: String
+        if isOpen || isPublic {
+            baseAccess = "public"
+        } else if isFilePrivate {
+            baseAccess = "fileprivate"
+        } else if isPrivate {
+            baseAccess = "private"
+        } else {
+            baseAccess = "" // internal
         }
 
-        return [
-            "public var state: State",
-            "open var bindings: [Combine.AnyCancellable] { [] }",
-            "public var cancelables: Set<Combine.AnyCancellable> = []",
-            """
-            public init(state: State) {
+        let bindingsAccess: String
+        if isOpen && !isFinal {
+            bindingsAccess = "open"
+        } else {
+            bindingsAccess = baseAccess
+        }
+
+        let hasSuperClass = classDecl.inheritanceClause != nil
+        let superInitCall = hasSuperClass ? "super.init()" : ""
+        
+        let space = { (s: String) in s.isEmpty ? "" : s + " " }
+
+        var results: [DeclSyntax] = []
+        
+        if !hasState {
+            results.append("\(raw: space(baseAccess))struct State { public init() {} }")
+        }
+        
+        if !hasAction {
+            results.append("\(raw: space(baseAccess))enum Action {}")
+        }
+        
+        if !hasTrigger {
+            results.append("\(raw: space(baseAccess))func trigger(_ action: Action) async {}")
+        }
+
+        // Check if state variable exists
+        let hasStateVar = memberList.contains { member in
+            guard let varDecl = member.decl.as(VariableDeclSyntax.self) else { return false }
+            return varDecl.bindings.contains { $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == "state" }
+        }
+        
+        if !hasStateVar {
+            results.append("\(raw: space(baseAccess))var state: State")
+        }
+
+        results.append("\(raw: space(bindingsAccess))var bindings: [Combine.AnyCancellable] { [] }")
+        results.append("\(raw: space(baseAccess))var cancelables: Set<Combine.AnyCancellable> = []")
+        
+        results.append("""
+            \(raw: space(baseAccess))init(state: State) {
                 self.state = state
-                super.init()
+                \(raw: superInitCall)
                 bind()
             }
-            """,
-            """
-            public final func bind() {
+            """)
+        
+        if !hasState {
+            results.append("""
+                \(raw: space(baseAccess))init() {
+                    self.state = State()
+                    \(raw: superInitCall)
+                    bind()
+                }
+                """)
+        }
+
+        results.append("""
+            \(raw: space(baseAccess))final func bind() {
                 bindings.forEach { $0.store(in: &cancelables) }
             }
-            """
-        ]
+            """)
+        
+        return results
     }
     
     // MARK: - ExtensionMacro
@@ -107,10 +166,28 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             conformances += ", SwiftUI.ObservableObject"
         }
         
+        let modifiers = declaration.modifiers.map { $0.as(DeclModifierSyntax.self)?.name.text ?? "" }
+        let isPublic = modifiers.contains("public") || modifiers.contains("open")
+        let isFilePrivate = modifiers.contains("fileprivate")
+        let isPrivate = modifiers.contains("private")
+        
+        let baseAccess: String
+        if isPublic {
+            baseAccess = "public"
+        } else if isFilePrivate {
+            baseAccess = "fileprivate"
+        } else if isPrivate {
+            baseAccess = "private"
+        } else {
+            baseAccess = "" // internal
+        }
+        
+        let space = { (s: String) in s.isEmpty ? "" : s + " " }
+
         let extensionDecl: DeclSyntax = 
             """
             extension \(raw: type.trimmedDescription): \(raw: conformances) {
-                public nonisolated var id: Foundation.UUID { Foundation.UUID() }
+                \(raw: space(baseAccess))nonisolated var id: Foundation.UUID { Foundation.UUID() }
             }
             """
         

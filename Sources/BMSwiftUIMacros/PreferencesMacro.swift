@@ -47,6 +47,15 @@ public struct PreferencesMacro: MemberMacro, ExtensionMacro {
             results.append("public let preferencesChangedSubject = Combine.PassthroughSubject<AnyKeyPath, Never>()")
         }
         
+        // Add extension to Preference
+        results.append("""
+            extension Preference {
+                public init(_ keyPath: ReferenceWritableKeyPath<\(raw: classDecl.name.text), Value>) {
+                    self.init(keyPath, store: .shared)
+                }
+            }
+            """)
+        
         return results
     }
     
