@@ -1,5 +1,5 @@
 //
-//  NavApperanceModifire.swift
+//  NavAppearanceModifier.swift
 //  ApoApp
 //
 //  Created by Bakr mohamed on 29/05/2023.

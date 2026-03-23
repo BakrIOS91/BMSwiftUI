@@ -1,5 +1,5 @@
 //
-//  Prefrances.swift
+//  Preferences.swift
 //
 //
 //  Created by Bakr mohamed on 04/08/2024.
