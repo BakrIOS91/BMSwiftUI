@@ -153,6 +153,7 @@ enum MacroDiagnostic: Error, DiagnosticMessage {
 @main
 struct BMSwiftUIMacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
-        BaseViewModelMacro.self
+        BaseViewModelMacro.self,
+        PreferencesMacro.self
     ]
 }
