@@ -7,6 +7,8 @@ import SwiftDiagnostics
 public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMacro {
     
     // MARK: - MemberAttributeMacro
+    
+    // MARK: - MemberAttributeMacro
     public static func expansion(
         of node: AttributeSyntax,
         attachedTo declaration: some DeclGroupSyntax,
@@ -18,16 +20,33 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
         // Get mode from macro argument
         let mode = getMode(from: node)
         
+        var attributes: [AttributeSyntax] = []
+        
+        // Handle property wrappers conflict with @Observable
+        if mode == "observable",
+           let varDecl = member.as(VariableDeclSyntax.self),
+           !varDecl.attributes.isEmpty {
+            let hasPropertyWrapper = varDecl.attributes.contains { attr in
+                guard let attr = attr.as(AttributeSyntax.self) else { return false }
+                let name = attr.attributeName.trimmedDescription
+                // Heuristic: check for common injection property wrappers
+                return name.contains("Injected") || name.contains("Preference") || name.contains("Environment")
+            }
+            if hasPropertyWrapper {
+                attributes.append("@ObservationIgnored")
+            }
+        }
+        
         // Only add @Published to 'state' if in .observed mode
         if mode == "observed",
            let varDecl = member.as(VariableDeclSyntax.self),
            let firstBinding = varDecl.bindings.first,
            let identifier = firstBinding.pattern.as(IdentifierPatternSyntax.self),
            identifier.identifier.text == "state" {
-            return ["@SwiftUI.Published"]
+            attributes.append("@SwiftUI.Published")
         }
         
-        return []
+        return attributes
     }
     
     // MARK: - MemberMacro
@@ -82,7 +101,7 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
         } else if isPrivate {
             baseAccess = "private"
         } else {
-            baseAccess = "" // internal
+            baseAccess = ""
         }
 
         let bindingsAccess: String
@@ -92,8 +111,13 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             bindingsAccess = baseAccess
         }
 
-        let hasSuperClass = classDecl.inheritanceClause != nil
-        let superInitCall = hasSuperClass ? "super.init()" : ""
+        let inheritance = classDecl.inheritanceClause?.inheritedTypes.map { $0.type.trimmedDescription } ?? []
+        let inheritsFromBase = inheritance.contains { $0.contains("BaseViewModel") }
+        
+        let hasSuperClass = !inheritance.isEmpty
+        let superInitCall = hasSuperClass ? (inheritsFromBase ? "super.init(state: state)" : "super.init()") : ""
+        
+        let hasInit = memberList.contains { $0.decl.is(InitializerDeclSyntax.self) }
         
         let space = { (s: String) in s.isEmpty ? "" : s + " " }
 
@@ -117,36 +141,40 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             return varDecl.bindings.contains { $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == "state" }
         }
         
-        if !hasStateVar {
+        if !hasStateVar && !inheritsFromBase {
             results.append("\(raw: space(baseAccess))var state: State")
         }
 
-        results.append("\(raw: space(bindingsAccess))var bindings: [Combine.AnyCancellable] { [] }")
-        results.append("\(raw: space(baseAccess))var cancelables: Set<Combine.AnyCancellable> = []")
+        if !inheritsFromBase {
+            results.append("\(raw: space(bindingsAccess))var bindings: [Combine.AnyCancellable] { [] }")
+            results.append("\(raw: space(baseAccess))var cancelables: Set<Combine.AnyCancellable> = []")
+        }
         
-        results.append("""
-            \(raw: space(baseAccess))init(state: State) {
-                self.state = state
-                \(raw: superInitCall)
-                bind()
+            if !hasInit {
+                results.append("""
+                    \(raw: space(baseAccess))init(state: State) {
+                        self.state = state
+                        \(raw: superInitCall)
+                        bind()
+                    }
+                    """)
+                
+                results.append("""
+                    \(raw: space(baseAccess))init() {
+                        self.state = State()
+                        \(raw: superInitCall)
+                        bind()
+                    }
+                    """)
             }
-            """)
-        
-        if !hasState {
+
+        if !inheritsFromBase {
             results.append("""
-                \(raw: space(baseAccess))init() {
-                    self.state = State()
-                    \(raw: superInitCall)
-                    bind()
+                \(raw: space(baseAccess))final func bind() {
+                    bindings.forEach { $0.store(in: &cancelables) }
                 }
                 """)
         }
-
-        results.append("""
-            \(raw: space(baseAccess))final func bind() {
-                bindings.forEach { $0.store(in: &cancelables) }
-            }
-            """)
         
         return results
     }
@@ -231,6 +259,7 @@ enum MacroDiagnostic: Error, DiagnosticMessage {
 struct BMSwiftUIMacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         BaseViewModelMacro.self,
-        PreferencesMacro.self
+        PreferencesMacro.self,
+        ObservedStateMacro.self
     ]
 }
