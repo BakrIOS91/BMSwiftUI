@@ -17,9 +17,9 @@ final class DependencyInjectionTests: XCTestCase {
     
     // MARK: - Tests
     
-    func testDefaultValueResovlesToLive() {
+    func testDefaultValueResovlesToTest() {
         let values = DependencyValues.shared
-        XCTAssertEqual(values[TestKey.self].value, "live")
+        XCTAssertEqual(values[TestKey.self].value, "test")
     }
     
     func testOverrideDependency() {
@@ -36,7 +36,7 @@ final class DependencyInjectionTests: XCTestCase {
         }
         
         // Should revert back to default after scope
-        XCTAssertEqual(DependencyValues.shared[TestKey.self].value, "live")
+        XCTAssertEqual(DependencyValues.shared[TestKey.self].value, "test")
     }
     
     func testWithDependenciesAsyncScopedOverride() async throws {
@@ -48,7 +48,7 @@ final class DependencyInjectionTests: XCTestCase {
             XCTAssertEqual(DependencyValues.shared[TestKey.self].value, "scoped-async")
         }
         
-        XCTAssertEqual(DependencyValues.shared[TestKey.self].value, "live")
+        XCTAssertEqual(DependencyValues.shared[TestKey.self].value, "test")
     }
     
     func testInjectedPropertyWrapper() {

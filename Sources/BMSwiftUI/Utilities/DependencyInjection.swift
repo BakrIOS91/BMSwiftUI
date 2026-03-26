@@ -61,6 +61,16 @@ public struct DependencyValues {
     
     private var storage = [ObjectIdentifier: Any]()
     
+    /// Whether the application is running in a SwiftUI preview.
+    public static var isPreview: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
+    
+    /// Whether the application is running in a test environment.
+    public static var isTesting: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_TESTS"] == "1"
+    }
+    
     /// Accesses the dependency associated with the given key type.
     /// - Returns: The registered value, or a default value based on the current environment.
     ///
@@ -79,13 +89,21 @@ public struct DependencyValues {
                 return value
             }
             
-            // Priority: Live (if available) -> Preview -> Test
+            if Self.isTesting {
+                return K.testValue
+            }
+            
+            if Self.isPreview {
+                return K.previewValue
+            }
+            
+            // Priority: Live (if available) -> Test
             if let liveKey = key as? any DependencyKey.Type,
                let liveValue = liveKey.liveValue as? K.Value {
                 return liveValue
             }
             
-            return K.previewValue
+            return K.testValue
         }
         set {
             storage[ObjectIdentifier(key)] = newValue

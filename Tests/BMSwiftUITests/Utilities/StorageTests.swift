@@ -4,6 +4,52 @@ import Combine
 
 final class StorageTests: XCTestCase {
     
+    // MARK: - Mocks
+    
+    final class MockSecureSettings {
+        @Secure("testSecureKey")
+        var secretValue: String = "DefaultSecret"
+    }
+    
+    final class CustomPreferences: PreferencesStore {
+        static let shared = CustomPreferences()
+        let preferencesChangedSubject = PassthroughSubject<AnyKeyPath, Never>()
+        
+        @UserDefault("customKey")
+        var customValue: String = "Initial"
+    }
+    
+    class MockViewCustom {
+        @Preference(\CustomPreferences.customValue, store: CustomPreferences.shared)
+        var value
+    }
+    
+    final class ObsPreferences: PreferencesStore {
+        static let shared = ObsPreferences()
+        let preferencesChangedSubject = PassthroughSubject<AnyKeyPath, Never>()
+        
+        @UserDefault("obsKey")
+        var obsValue: Int = 0
+    }
+    
+    class MockViewObs {
+        @Preference(\ObsPreferences.obsValue, store: ObsPreferences.shared)
+        var value
+    }
+
+    @Preferences
+    final class MacroSettings {
+         @UserDefault("macroKey")
+         var macroValue: String = "MacroDefault"
+    }
+    
+    class MockViewMacro {
+        @Preference(\MacroSettings.macroValue, store: MacroSettings.shared)
+        var value
+    }
+    
+    // MARK: - Setup
+    
     var cancellables: Set<AnyCancellable>!
     
     override func setUp() {
@@ -11,6 +57,10 @@ final class StorageTests: XCTestCase {
         cancellables = []
         // Clean up keychain for test keys
         cleanupKeychain(forKey: "testSecureKey")
+        // Clean up UserDefaults for test keys
+        UserDefaults.standard.removeObject(forKey: "customKey")
+        UserDefaults.standard.removeObject(forKey: "obsKey")
+        UserDefaults.standard.removeObject(forKey: "macroKey")
     }
     
     private func cleanupKeychain(forKey key: String) {
@@ -21,12 +71,9 @@ final class StorageTests: XCTestCase {
         SecItemDelete(query as CFDictionary)
     }
     
+    // MARK: - Tests
+    
     func testSecureStorage() {
-        class MockSecureSettings {
-            @Secure("testSecureKey")
-            var secretValue: String = "DefaultSecret"
-        }
-        
         let settings = MockSecureSettings()
         XCTAssertEqual(settings.secretValue, "DefaultSecret")
         
@@ -39,43 +86,20 @@ final class StorageTests: XCTestCase {
     }
     
     func testCustomPreferences() {
-        class CustomPreferences: Preferences {
-            static let custom = CustomPreferences()
-            
-            @UserDefault("customKey")
-            var customValue: String = "Initial"
-        }
-        
-        class MockView {
-            @Preference(\CustomPreferences.customValue, store: .custom)
-            var value
-        }
-        
-        let view = MockView()
+        let view = MockViewCustom()
         XCTAssertEqual(view.value, "Initial")
         
         view.value = "Updated"
-        XCTAssertEqual(CustomPreferences.custom.customValue, "Updated")
+        XCTAssertEqual(CustomPreferences.shared.customValue, "Updated")
         XCTAssertEqual(view.value, "Updated")
     }
     
     func testPreferenceObservation() {
-        class ObsPreferences: Preferences {
-            static let obs = ObsPreferences()
-            @UserDefault("obsKey")
-            var obsValue: Int = 0
-        }
-        
-        class MockView {
-            @Preference(\ObsPreferences.obsValue, store: .obs)
-            var value
-        }
-        
-        let view = MockView()
+        let view = MockViewObs()
         let expectation = XCTestExpectation(description: "Preference changed")
         
         var receivedKeyPath: AnyKeyPath?
-        ObsPreferences.obs.preferencesChangedSubject
+        ObsPreferences.shared.preferencesChangedSubject
             .sink { kp in
                 receivedKeyPath = kp
                 expectation.fulfill()
@@ -86,24 +110,11 @@ final class StorageTests: XCTestCase {
         
         wait(for: [expectation], timeout: 1.0)
         XCTAssertEqual(receivedKeyPath, \ObsPreferences.obsValue)
-        XCTAssertEqual(ObsPreferences.obs.obsValue, 42)
+        XCTAssertEqual(ObsPreferences.shared.obsValue, 42)
     }
 
     func testMacroPreferences() {
-        // Defined at top level or class level usually, but let's see if it works here
-        // If not, I'll move it outside
-        @Preferences
-        class MacroSettings {
-             @UserDefault("macroKey")
-             var macroValue: String = "MacroDefault"
-        }
-        
-        class MockView {
-            @Preference(\MacroSettings.macroValue) // Simplified invocation
-            var value
-        }
-        
-        let view = MockView()
+        let view = MockViewMacro()
         XCTAssertEqual(view.value, "MacroDefault")
         
         view.value = "UpdatedMacro"

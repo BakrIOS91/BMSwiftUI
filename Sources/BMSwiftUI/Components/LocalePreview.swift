@@ -16,7 +16,7 @@ private struct LocalePreviewContent: Identifiable {
 
 // MARK: - LocalePreview
 public struct LocalePreview<Content: View>: View {
-    @Preference(\.previewLocale) var previewLocale
+    @Preference(\SharedPreferences.previewLocale) var previewLocale
     
     let content: () -> Content
     private let previewContent: [LocalePreviewContent]

@@ -273,7 +273,7 @@ public extension View {
 }
 
 public struct SheetContainerView<Content: View>: View {
-    @Preference(\.previewLocale) var previewLocale
+    @Preference(\SharedPreferences.previewLocale) var previewLocale
     @Binding public var isModalPresented: Bool
     public var content: () -> Content
     
