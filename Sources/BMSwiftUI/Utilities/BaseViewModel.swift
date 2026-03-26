@@ -28,7 +28,7 @@ public protocol BaseViewModelProtocol: AnyObject, CancelableStore {
     
     /// Triggers an action to modify the state.
     /// - Parameter action: The action to be triggered.
-    func trigger(_ action: Action) async
+    func trigger(_ action: Action)
 }
 
 // MARK: - Modern BaseViewModel (iOS 17+)
@@ -61,7 +61,7 @@ open class BaseViewModel<State, Action>: NSObject, BaseViewModelProtocol {
     
     /// Triggers an action to modify the state.
     /// - Parameter action: The action to be triggered.
-    open func trigger(_ action: Action) async {
+    open func trigger(_ action: Action) {
         fatalError("Override!")
     }
 }

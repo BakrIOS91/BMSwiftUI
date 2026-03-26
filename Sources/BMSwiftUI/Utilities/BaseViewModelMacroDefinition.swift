@@ -28,7 +28,7 @@ public enum ViewModelMode {
 /// To use `@BaseViewModel`, your class **must** define the following nested members:
 /// - `struct State` or `typealias State`: The data structure representing your view's state.
 /// - `enum Action` or `typealias Action`: The events that trigger state changes.
-/// - `func trigger(_ action: Action) async`: The logic handling state transitions.
+/// - `func trigger(_ action: Action)`: The logic handling state transitions.
 ///
 /// ### Generated Members
 /// The macro adds the following implementations to your class:
@@ -52,7 +52,7 @@ public enum ViewModelMode {
 ///     struct State { var count = 0 }
 ///     enum Action { case increment }
 ///     
-///     func trigger(_ action: Action) async {
+///     func trigger(_ action: Action) {
 ///         switch action {
 ///         case .increment: state.count += 1
 ///         }
@@ -69,7 +69,7 @@ public enum ViewModelMode {
 ///     struct State { var total = 0.0 }
 ///     enum Action { case calculate }
 ///     
-///     func trigger(_ action: Action) async {
+///     func trigger(_ action: Action) {
 ///         // logic here
 ///     }
 /// }

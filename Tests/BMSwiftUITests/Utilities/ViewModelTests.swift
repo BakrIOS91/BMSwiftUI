@@ -26,7 +26,7 @@ final class ViewModelTests: XCTestCase {
     // MARK: - ObservedBaseViewModel Tests (Pre-iOS 17)
     
     class TestObservedViewModel: ObservedBaseViewModel<MockState, MockAction> {
-        override func trigger(_ action: MockAction) async {
+        override func trigger(_ action: MockAction) {
             switch action {
             case .increment:
                 state.count += 1
@@ -41,10 +41,10 @@ final class ViewModelTests: XCTestCase {
         let vm = TestObservedViewModel(state: MockState())
         XCTAssertEqual(vm.state.count, 0)
         
-        await vm.trigger(.increment)
+        vm.trigger(.increment)
         XCTAssertEqual(vm.state.count, 1)
         
-        await vm.trigger(.updateTitle("New Title"))
+        vm.trigger(.updateTitle("New Title"))
         XCTAssertEqual(vm.state.title, "New Title")
     }
     
@@ -57,7 +57,7 @@ final class ViewModelTests: XCTestCase {
             expectation.fulfill()
         }
         
-        await vm.trigger(.increment)
+        vm.trigger(.increment)
         
         await fulfillment(of: [expectation], timeout: 1.0)
         cancellable.cancel()
@@ -68,7 +68,7 @@ final class ViewModelTests: XCTestCase {
     #if canImport(Observation)
     @available(iOS 17.0, macOS 14.0, *)
     class TestModernViewModel: BaseViewModel<MockState, MockAction> {
-        override func trigger(_ action: MockAction) async {
+        override func trigger(_ action: MockAction) {
             switch action {
             case .increment:
                 state.count += 1
@@ -85,7 +85,7 @@ final class ViewModelTests: XCTestCase {
         let vm = TestModernViewModel(state: MockState())
         XCTAssertEqual(vm.state.count, 0)
         
-        await vm.trigger(.increment)
+        vm.trigger(.increment)
         XCTAssertEqual(vm.state.count, 1)
     }
     #endif

@@ -34,7 +34,7 @@ open class ObservedBaseViewModel<State, Action>: NSObject, BaseViewModelProtocol
     
     /// Triggers an action to modify the state.
     /// - Parameter action: The action to be triggered.
-    open func trigger(_ action: Action) async {
+    open func trigger(_ action: Action) {
         fatalError("Override!")
     }
 }

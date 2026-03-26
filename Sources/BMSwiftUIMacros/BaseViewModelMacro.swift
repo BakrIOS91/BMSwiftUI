@@ -132,7 +132,7 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
         }
         
         if !hasTrigger {
-            results.append("\(raw: space(baseAccess))func trigger(_ action: Action) async {}")
+            results.append("\(raw: space(baseAccess))func trigger(_ action: Action) {}")
         }
 
         // Check if state variable exists
