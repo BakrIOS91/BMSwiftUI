@@ -132,7 +132,7 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
         }
         
         if !hasTrigger {
-            results.append("\(raw: space(baseAccess))func trigger(_ action: Action) {}")
+            results.append("\(raw: space(baseAccess))@discardableResult func trigger(_ action: Action) -> ViewModelEffect { .none }")
         }
 
         // Check if state variable exists

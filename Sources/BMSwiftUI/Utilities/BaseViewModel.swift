@@ -12,6 +12,15 @@ import Combine
 import Observation
 #endif
 
+/// Represents the effect produced by a view model action.
+public enum ViewModelEffect {
+    /// No side effect produced.
+    case none
+    
+    /// An asynchronous task to be executed.
+    case task(@MainActor () async -> Void)
+}
+
 /// A protocol defining the requirements for a base view model.
 /// Conforming types must be `AnyObject` (class-bound) and implement the `CancelableStore` protocol.
 /// The `@MainActor` attribute ensures that all methods and properties are accessed on the main thread.
@@ -28,7 +37,9 @@ public protocol BaseViewModelProtocol: AnyObject, CancelableStore {
     
     /// Triggers an action to modify the state.
     /// - Parameter action: The action to be triggered.
-    func trigger(_ action: Action)
+    /// - Returns: A `ViewModelEffect` representing any side effects.
+    @discardableResult
+    func trigger(_ action: Action) -> ViewModelEffect
 }
 
 // MARK: - Modern BaseViewModel (iOS 17+)
@@ -61,8 +72,30 @@ open class BaseViewModel<State, Action>: NSObject, BaseViewModelProtocol {
     
     /// Triggers an action to modify the state.
     /// - Parameter action: The action to be triggered.
-    open func trigger(_ action: Action) {
-        fatalError("Override!")
+    /// - Returns: A `ViewModelEffect` representing any side effects.
+    @discardableResult
+    @MainActor
+    public final func trigger(_ action: Action) -> ViewModelEffect {
+        let effect = onTrigger(action)
+        
+        switch effect {
+        case .none:
+            break
+        case .task(let operation):
+            Task { @MainActor in
+                await operation()
+            }
+        }
+        
+        return effect
+    }
+    
+    /// Internal method to be overridden by subclasses to handle actions.
+    /// - Parameter action: The action to be handled.
+    /// - Returns: A `ViewModelEffect` representing any side effects.
+    @MainActor
+    open func onTrigger(_ action: Action) -> ViewModelEffect {
+        .none
     }
 }
 

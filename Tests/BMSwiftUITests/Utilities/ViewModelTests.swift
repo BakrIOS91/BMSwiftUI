@@ -26,13 +26,15 @@ final class ViewModelTests: XCTestCase {
     // MARK: - ObservedBaseViewModel Tests (Pre-iOS 17)
     
     class TestObservedViewModel: ObservedBaseViewModel<MockState, MockAction> {
-        override func trigger(_ action: MockAction) {
+        @discardableResult
+        override func trigger(_ action: MockAction) -> ViewModelEffect {
             switch action {
             case .increment:
                 state.count += 1
             case .updateTitle(let title):
                 state.title = title
             }
+            return .none
         }
     }
     
@@ -68,13 +70,15 @@ final class ViewModelTests: XCTestCase {
     #if canImport(Observation)
     @available(iOS 17.0, macOS 14.0, *)
     class TestModernViewModel: BaseViewModel<MockState, MockAction> {
-        override func trigger(_ action: MockAction) {
+        @discardableResult
+        override func trigger(_ action: MockAction) -> ViewModelEffect {
             switch action {
             case .increment:
                 state.count += 1
             case .updateTitle(let title):
                 state.title = title
             }
+            return .none
         }
     }
     

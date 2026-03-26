@@ -34,8 +34,30 @@ open class ObservedBaseViewModel<State, Action>: NSObject, BaseViewModelProtocol
     
     /// Triggers an action to modify the state.
     /// - Parameter action: The action to be triggered.
-    open func trigger(_ action: Action) {
-        fatalError("Override!")
+    /// - Returns: A `ViewModelEffect` representing any side effects.
+    @discardableResult
+    @MainActor
+    public final func trigger(_ action: Action) -> ViewModelEffect {
+        let effect = onTrigger(action)
+        
+        switch effect {
+        case .none:
+            break
+        case .task(let operation):
+            Task { @MainActor in
+                await operation()
+            }
+        }
+        
+        return effect
+    }
+    
+    /// Internal method to be overridden by subclasses to handle actions.
+    /// - Parameter action: The action to be handled.
+    /// - Returns: A `ViewModelEffect` representing any side effects.
+    @MainActor
+    open func onTrigger(_ action: Action) -> ViewModelEffect {
+        .none
     }
 }
 
