@@ -19,6 +19,12 @@ public enum ViewModelEffect {
     
     /// An asynchronous task to be executed.
     case task(@MainActor () async -> Void)
+    
+    /// A cancellable asynchronous task with an identifier.
+    case cancellableTask(id: String, cancelExisting: Bool = true, @MainActor () async -> Void)
+    
+    /// Cancels a previously started task with the given identifier.
+    case cancelTask(id: String)
 }
 
 /// A protocol defining the requirements for a base view model.
@@ -57,6 +63,10 @@ open class BaseViewModel<State, Action>: NSObject, BaseViewModelProtocol {
     /// This is used to store Combine subscriptions.
     open var bindings: [AnyCancellable] { [] }
     
+    /// A registry for managing asynchronous tasks.
+    @ObservationIgnored
+    private var tasks: [String: Task<Void, Never>] = [:]
+    
     /// Initializes the view model with an initial state.
     /// - Parameter state: The initial state of the view model.
     public init(state: State) {
@@ -77,7 +87,12 @@ open class BaseViewModel<State, Action>: NSObject, BaseViewModelProtocol {
     @MainActor
     public final func trigger(_ action: Action) -> ViewModelEffect {
         let effect = onTrigger(action)
-        
+        handleEffect(effect)
+        return effect
+    }
+    
+    @MainActor
+    private func handleEffect(_ effect: ViewModelEffect) {
         switch effect {
         case .none:
             break
@@ -85,9 +100,20 @@ open class BaseViewModel<State, Action>: NSObject, BaseViewModelProtocol {
             Task { @MainActor in
                 await operation()
             }
+        case .cancellableTask(let id, let cancelExisting, let operation):
+            if cancelExisting {
+                tasks[id]?.cancel()
+            }
+            tasks[id] = Task { @MainActor in
+                await operation()
+                if !Task.isCancelled {
+                    tasks[id] = nil
+                }
+            }
+        case .cancelTask(let id):
+            tasks[id]?.cancel()
+            tasks[id] = nil
         }
-        
-        return effect
     }
     
     /// Internal method to be overridden by subclasses to handle actions.

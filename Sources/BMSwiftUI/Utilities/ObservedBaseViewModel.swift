@@ -19,6 +19,9 @@ open class ObservedBaseViewModel<State, Action>: NSObject, BaseViewModelProtocol
     /// A computed property that returns an array of `AnyCancellable` objects.
     open var bindings: [AnyCancellable] { [] }
     
+    /// A registry for managing asynchronous tasks.
+    private var tasks: [String: Task<Void, Never>] = [:]
+    
     /// Initializes the view model with an initial state.
     /// - Parameter state: The initial state of the view model.
     public init(state: State) {
@@ -39,7 +42,12 @@ open class ObservedBaseViewModel<State, Action>: NSObject, BaseViewModelProtocol
     @MainActor
     public final func trigger(_ action: Action) -> ViewModelEffect {
         let effect = onTrigger(action)
-        
+        handleEffect(effect)
+        return effect
+    }
+    
+    @MainActor
+    private func handleEffect(_ effect: ViewModelEffect) {
         switch effect {
         case .none:
             break
@@ -47,9 +55,20 @@ open class ObservedBaseViewModel<State, Action>: NSObject, BaseViewModelProtocol
             Task { @MainActor in
                 await operation()
             }
+        case .cancellableTask(let id, let cancelExisting, let operation):
+            if cancelExisting {
+                tasks[id]?.cancel()
+            }
+            tasks[id] = Task { @MainActor in
+                await operation()
+                if !Task.isCancelled {
+                    tasks[id] = nil
+                }
+            }
+        case .cancelTask(let id):
+            tasks[id]?.cancel()
+            tasks[id] = nil
         }
-        
-        return effect
     }
     
     /// Internal method to be overridden by subclasses to handle actions.
