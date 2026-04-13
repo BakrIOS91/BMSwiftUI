@@ -12,13 +12,16 @@ import Combine
 // Uses the traditional ObservableObject pattern with @Published for backward compatibility.
 
 @MainActor
-open class ObservedBaseViewModel<State, Action>: NSObject, BaseViewModelProtocol, ObservableObject {
+open class ObservedBaseViewModel<State, Action>: NSObject, BaseViewModelProtocol, ObservableObject, Identifiable {
     /// The current state of the view model, wrapped in @Published to notify observers.
     @Published public var state: State
-    
+
     /// A computed property that returns an array of `AnyCancellable` objects.
     open var bindings: [AnyCancellable] { [] }
-    
+
+    /// A stable unique identifier for this view model instance.
+    public nonisolated let id: UUID = UUID()
+
     /// A registry for managing asynchronous tasks.
     private var tasks: [String: Task<Void, Never>] = [:]
     
@@ -80,9 +83,3 @@ open class ObservedBaseViewModel<State, Action>: NSObject, BaseViewModelProtocol
     }
 }
 
-extension ObservedBaseViewModel: Identifiable {
-    /// A computed property that returns a unique `UUID` for the view model.
-    public nonisolated var id: UUID {
-        UUID()
-    }
-}

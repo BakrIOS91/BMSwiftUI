@@ -5,9 +5,7 @@ import SwiftSyntaxMacros
 import SwiftDiagnostics
 
 public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMacro {
-    
-    // MARK: - MemberAttributeMacro
-    
+
     // MARK: - MemberAttributeMacro
     public static func expansion(
         of node: AttributeSyntax,
@@ -16,12 +14,11 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
         in context: some MacroExpansionContext
     ) throws -> [AttributeSyntax] {
         guard declaration.is(ClassDeclSyntax.self) else { return [] }
-        
-        // Get mode from macro argument
+
         let mode = getMode(from: node)
-        
+
         var attributes: [AttributeSyntax] = []
-        
+
         // Handle property wrappers conflict with @Observable
         if mode == "observable",
            let varDecl = member.as(VariableDeclSyntax.self),
@@ -29,14 +26,13 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             let hasPropertyWrapper = varDecl.attributes.contains { attr in
                 guard let attr = attr.as(AttributeSyntax.self) else { return false }
                 let name = attr.attributeName.trimmedDescription
-                // Heuristic: check for common injection property wrappers
                 return name.contains("Injected") || name.contains("Preference") || name.contains("Environment")
             }
             if hasPropertyWrapper {
                 attributes.append("@ObservationIgnored")
             }
         }
-        
+
         // Only add @Published to 'state' if in .observed mode
         if mode == "observed",
            let varDecl = member.as(VariableDeclSyntax.self),
@@ -45,10 +41,10 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
            identifier.identifier.text == "state" {
             attributes.append("@SwiftUI.Published")
         }
-        
+
         return attributes
     }
-    
+
     // MARK: - MemberMacro
     public static func expansion(
         of node: AttributeSyntax,
@@ -58,9 +54,10 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
         guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
             throw MacroDiagnostic.onlyApplicableToClass
         }
-        
+
+        let mode = getMode(from: node)
         let memberList = classDecl.memberBlock.members
-        
+
         // Check for State and Action
         let hasState = memberList.contains { member in
             if let structDecl = member.decl.as(StructDeclSyntax.self), structDecl.name.text == "State" { return true }
@@ -68,25 +65,24 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             if let typeAlias = member.decl.as(TypeAliasDeclSyntax.self), typeAlias.name.text == "State" { return true }
             return false
         }
-        
+
         let hasAction = memberList.contains { member in
             if let enumDecl = member.decl.as(EnumDeclSyntax.self), enumDecl.name.text == "Action" { return true }
             if let structDecl = member.decl.as(StructDeclSyntax.self), structDecl.name.text == "Action" { return true }
             if let typeAlias = member.decl.as(TypeAliasDeclSyntax.self), typeAlias.name.text == "Action" { return true }
             return false
         }
-        
-        // Check for trigger method
+
         let hasTrigger = memberList.contains { member in
             guard let funcDecl = member.decl.as(FunctionDeclSyntax.self) else { return false }
             return funcDecl.name.text == "trigger"
         }
-        
+
         let isFinal = classDecl.modifiers.contains { modifier in
             guard let name = modifier.as(DeclModifierSyntax.self)?.name.text else { return false }
             return name == "final"
         }
-        
+
         let modifiers = classDecl.modifiers.map { $0.as(DeclModifierSyntax.self)?.name.text ?? "" }
         let isPublic = modifiers.contains("public")
         let isOpen = modifiers.contains("open")
@@ -113,60 +109,110 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
 
         let inheritance = classDecl.inheritanceClause?.inheritedTypes.map { $0.type.trimmedDescription } ?? []
         let inheritsFromBase = inheritance.contains { $0.contains("BaseViewModel") }
-        
-        let hasSuperClass = !inheritance.isEmpty
-        let superInitCall = hasSuperClass ? (inheritsFromBase ? "super.init(state: state)" : "super.init()") : ""
-        
+
+        // Only call super.init() for non-BaseViewModel superclasses (e.g. NSObject).
+        // inheritsFromBase is handled separately in the init block.
+        let hasSuperClass = !inheritance.isEmpty && !inheritsFromBase
+
         let hasInit = memberList.contains { $0.decl.is(InitializerDeclSyntax.self) }
-        
+
         let space = { (s: String) in s.isEmpty ? "" : s + " " }
 
         var results: [DeclSyntax] = []
-        
+
         if !hasState {
-            results.append("\(raw: space(baseAccess))struct State { public init() {} }")
+            // Use the class access level for the generated State init, not hardcoded public
+            results.append("\(raw: space(baseAccess))struct State { \(raw: space(baseAccess))init() {} }")
         }
-        
+
         if !hasAction {
             results.append("\(raw: space(baseAccess))enum Action {}")
         }
-        
+
         if !hasTrigger {
             results.append("\(raw: space(baseAccess))@discardableResult func trigger(_ action: Action) -> ViewModelEffect { .none }")
         }
 
-        // Check if state variable exists
         let hasStateVar = memberList.contains { member in
             guard let varDecl = member.decl.as(VariableDeclSyntax.self) else { return false }
             return varDecl.bindings.contains { $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == "state" }
         }
-        
+
         if !hasStateVar && !inheritsFromBase {
             results.append("\(raw: space(baseAccess))var state: State")
         }
 
         if !inheritsFromBase {
             results.append("\(raw: space(bindingsAccess))var bindings: [Combine.AnyCancellable] { [] }")
-            results.append("\(raw: space(baseAccess))var cancelables: Set<Combine.AnyCancellable> = []")
+
+            // Mark cancelables as @ObservationIgnored in observable mode to avoid
+            // unnecessary view re-renders when subscriptions are stored/cancelled.
+            if mode == "observable" {
+                results.append("@ObservationIgnored \(raw: space(baseAccess))var cancelables: Set<Combine.AnyCancellable> = []")
+            } else {
+                results.append("\(raw: space(baseAccess))var cancelables: Set<Combine.AnyCancellable> = []")
+            }
+
+            // Generate a stable id as a stored let property so Identifiable works correctly
+            // for ForEach, list diffing, etc. Mark as @ObservationIgnored in observable mode
+            // so reading id doesn't register as a tracked dependency.
+            if mode == "observable" {
+                results.append("@ObservationIgnored \(raw: space(baseAccess))nonisolated let id: Foundation.UUID = Foundation.UUID()")
+            } else {
+                results.append("\(raw: space(baseAccess))nonisolated let id: Foundation.UUID = Foundation.UUID()")
+            }
         }
-        
-            if !hasInit {
+
+        if !hasInit {
+            if inheritsFromBase {
+                // Subclass of BaseViewModel: super.init(state:) handles both the state
+                // assignment and the bind() call (via dynamic dispatch to self.bindings).
+                // Setting self.state before super.init() would be a Swift Phase-1 error
+                // since state is an inherited stored property.
+                results.append("""
+                    \(raw: space(baseAccess))init(state: State) {
+                        super.init(state: state)
+                    }
+                    """)
+                results.append("""
+                    \(raw: space(baseAccess))init() {
+                        super.init(state: State())
+                    }
+                    """)
+            } else if hasSuperClass {
+                // Class with a non-BaseViewModel superclass (e.g. NSObject).
+                // Set our own stored properties first (Phase 1), then delegate to super,
+                // then perform Phase-2 customisation (bind).
                 results.append("""
                     \(raw: space(baseAccess))init(state: State) {
                         self.state = state
-                        \(raw: superInitCall)
+                        super.init()
                         bind()
                     }
                     """)
-                
                 results.append("""
                     \(raw: space(baseAccess))init() {
                         self.state = State()
-                        \(raw: superInitCall)
+                        super.init()
+                        bind()
+                    }
+                    """)
+            } else {
+                // Root class — no super.init() needed.
+                results.append("""
+                    \(raw: space(baseAccess))init(state: State) {
+                        self.state = state
+                        bind()
+                    }
+                    """)
+                results.append("""
+                    \(raw: space(baseAccess))init() {
+                        self.state = State()
                         bind()
                     }
                     """)
             }
+        }
 
         if !inheritsFromBase {
             results.append("""
@@ -175,10 +221,10 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
                 }
                 """)
         }
-        
+
         return results
     }
-    
+
     // MARK: - ExtensionMacro
     public static func expansion(
         of node: AttributeSyntax,
@@ -188,44 +234,25 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
         let mode = getMode(from: node)
-        
+
         var conformances = "BaseViewModelProtocol, Identifiable"
         if mode == "observed" {
             conformances += ", SwiftUI.ObservableObject"
         }
-        
-        let modifiers = declaration.modifiers.map { $0.as(DeclModifierSyntax.self)?.name.text ?? "" }
-        let isPublic = modifiers.contains("public") || modifiers.contains("open")
-        let isFilePrivate = modifiers.contains("fileprivate")
-        let isPrivate = modifiers.contains("private")
-        
-        let baseAccess: String
-        if isPublic {
-            baseAccess = "public"
-        } else if isFilePrivate {
-            baseAccess = "fileprivate"
-        } else if isPrivate {
-            baseAccess = "private"
-        } else {
-            baseAccess = "" // internal
-        }
-        
-        let space = { (s: String) in s.isEmpty ? "" : s + " " }
 
-        let extensionDecl: DeclSyntax = 
+        // The id stored property is generated in MemberMacro so the extension body is empty.
+        let extensionDecl: DeclSyntax =
             """
-            extension \(raw: type.trimmedDescription): \(raw: conformances) {
-                \(raw: space(baseAccess))nonisolated var id: Foundation.UUID { Foundation.UUID() }
-            }
+            extension \(raw: type.trimmedDescription): \(raw: conformances) {}
             """
-        
+
         guard let extensionDecl = extensionDecl.as(ExtensionDeclSyntax.self) else {
             return []
         }
-        
+
         return [extensionDecl]
     }
-    
+
     // MARK: - Helpers
     private static func getMode(from node: AttributeSyntax) -> String {
         guard let arguments = node.arguments?.as(LabeledExprListSyntax.self),
@@ -240,16 +267,16 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
 enum MacroDiagnostic: Error, DiagnosticMessage {
     case onlyApplicableToClass
     case missingMember(String)
-    
+
     var severity: DiagnosticSeverity { .error }
-    
+
     var message: String {
         switch self {
         case .onlyApplicableToClass: return "@BaseViewModel can only be applied to a class."
         case .missingMember(let name): return "@BaseViewModel requires a nested '\(name)' definition."
         }
     }
-    
+
     var diagnosticID: MessageID {
         MessageID(domain: "BMSwiftUIMacros", id: message)
     }

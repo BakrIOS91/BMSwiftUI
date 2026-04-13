@@ -27,7 +27,7 @@ final class ViewModelTests: XCTestCase {
     
     class TestObservedViewModel: ObservedBaseViewModel<MockState, MockAction> {
         @discardableResult
-        override func trigger(_ action: MockAction) -> ViewModelEffect {
+        override func onTrigger(_ action: MockAction) -> ViewModelEffect {
             switch action {
             case .increment:
                 state.count += 1
@@ -71,7 +71,7 @@ final class ViewModelTests: XCTestCase {
     @available(iOS 17.0, macOS 14.0, *)
     class TestModernViewModel: BaseViewModel<MockState, MockAction> {
         @discardableResult
-        override func trigger(_ action: MockAction) -> ViewModelEffect {
+        override func onTrigger(_ action: MockAction) -> ViewModelEffect {
             switch action {
             case .increment:
                 state.count += 1

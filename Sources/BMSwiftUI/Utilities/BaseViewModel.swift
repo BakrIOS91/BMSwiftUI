@@ -55,7 +55,7 @@ public protocol BaseViewModelProtocol: AnyObject, CancelableStore {
 @available(iOS 17.0, macOS 14.0, *)
 @MainActor
 @Observable
-open class BaseViewModel<State, Action>: NSObject, BaseViewModelProtocol {
+open class BaseViewModel<State, Action>: NSObject, BaseViewModelProtocol, Identifiable {
     /// The current state of the view model. Marked with @Observable macro.
     public var state: State
     
@@ -63,10 +63,14 @@ open class BaseViewModel<State, Action>: NSObject, BaseViewModelProtocol {
     /// This is used to store Combine subscriptions.
     open var bindings: [AnyCancellable] { [] }
     
+    /// A stable unique identifier for this view model instance.
+    @ObservationIgnored
+    public nonisolated let id: UUID = UUID()
+
     /// A registry for managing asynchronous tasks.
     @ObservationIgnored
     private var tasks: [String: Task<Void, Never>] = [:]
-    
+
     /// Initializes the view model with an initial state.
     /// - Parameter state: The initial state of the view model.
     public init(state: State) {
@@ -125,11 +129,4 @@ open class BaseViewModel<State, Action>: NSObject, BaseViewModelProtocol {
     }
 }
 
-@available(iOS 17.0, macOS 14.0, *)
-extension BaseViewModel: Identifiable {
-    /// A computed property that returns a unique `UUID` for the view model.
-    public nonisolated var id: UUID {
-        UUID()
-    }
-}
 #endif
