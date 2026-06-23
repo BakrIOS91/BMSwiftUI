@@ -19,6 +19,7 @@ private class CancelableBag: NSObject {
 
 /// A protocol that defines the requirements for a type that can store Combine subscriptions.
 /// Conforming types must be `AnyObject` (class-bound) and provide a set of `AnyCancellable` objects.
+@MainActor
 public protocol CancelableStore: AnyObject {
     /// A set of `AnyCancellable` objects used to store Combine subscriptions.
     var cancelables: Set<AnyCancellable> { get set }

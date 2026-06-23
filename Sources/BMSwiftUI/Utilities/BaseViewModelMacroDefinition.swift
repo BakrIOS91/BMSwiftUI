@@ -79,5 +79,5 @@ public enum ViewModelMode {
 /// ```
 @attached(member, names: arbitrary)
 @attached(memberAttribute)
-@attached(extension, conformances: BaseViewModelProtocol, Identifiable, names: arbitrary)
+@attached(extension, conformances: BaseViewModelProtocol, Identifiable, SwiftUI.ObservableObject, names: arbitrary)
 public macro BaseViewModel(mode: ViewModelMode = .observable) = #externalMacro(module: "BMSwiftUIMacros", type: "BaseViewModelMacro")

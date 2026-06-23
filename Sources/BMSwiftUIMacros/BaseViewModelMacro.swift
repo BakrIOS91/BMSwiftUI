@@ -78,6 +78,8 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             return funcDecl.name.text == "trigger"
         }
 
+
+
         let isFinal = classDecl.modifiers.contains { modifier in
             guard let name = modifier.as(DeclModifierSyntax.self)?.name.text else { return false }
             return name == "final"
@@ -114,14 +116,11 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
         // inheritsFromBase is handled separately in the init block.
         let hasSuperClass = !inheritance.isEmpty && !inheritsFromBase
 
-        let hasInit = memberList.contains { $0.decl.is(InitializerDeclSyntax.self) }
-
         let space = { (s: String) in s.isEmpty ? "" : s + " " }
 
         var results: [DeclSyntax] = []
 
         if !hasState {
-            // Use the class access level for the generated State init, not hardcoded public
             results.append("\(raw: space(baseAccess))struct State { \(raw: space(baseAccess))init() {} }")
         }
 
@@ -133,29 +132,20 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             results.append("\(raw: space(baseAccess))@discardableResult func trigger(_ action: Action) -> ViewModelEffect { .none }")
         }
 
-        let hasStateVar = memberList.contains { member in
-            guard let varDecl = member.decl.as(VariableDeclSyntax.self) else { return false }
-            return varDecl.bindings.contains { $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == "state" }
-        }
-
-        if !hasStateVar && !inheritsFromBase {
-            results.append("\(raw: space(baseAccess))var state: State")
-        }
-
         if !inheritsFromBase {
+            if mode == "observed" {
+                results.append("@SwiftUI.Published \(raw: space(baseAccess))var state: State")
+            } else {
+                results.append("\(raw: space(baseAccess))var state: State")
+            }
             results.append("\(raw: space(bindingsAccess))var bindings: [Combine.AnyCancellable] { [] }")
 
-            // Mark cancelables as @ObservationIgnored in observable mode to avoid
-            // unnecessary view re-renders when subscriptions are stored/cancelled.
             if mode == "observable" {
                 results.append("@ObservationIgnored \(raw: space(baseAccess))var cancelables: Set<Combine.AnyCancellable> = []")
             } else {
                 results.append("\(raw: space(baseAccess))var cancelables: Set<Combine.AnyCancellable> = []")
             }
 
-            // Generate a stable id as a stored let property so Identifiable works correctly
-            // for ForEach, list diffing, etc. Mark as @ObservationIgnored in observable mode
-            // so reading id doesn't register as a tracked dependency.
             if mode == "observable" {
                 results.append("@ObservationIgnored \(raw: space(baseAccess))nonisolated let id: Foundation.UUID = Foundation.UUID()")
             } else {
@@ -163,56 +153,9 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             }
         }
 
-        if !hasInit {
-            if inheritsFromBase {
-                // Subclass of BaseViewModel: super.init(state:) handles both the state
-                // assignment and the bind() call (via dynamic dispatch to self.bindings).
-                // Setting self.state before super.init() would be a Swift Phase-1 error
-                // since state is an inherited stored property.
-                results.append("""
-                    \(raw: space(baseAccess))init(state: State) {
-                        super.init(state: state)
-                    }
-                    """)
-                results.append("""
-                    \(raw: space(baseAccess))init() {
-                        super.init(state: State())
-                    }
-                    """)
-            } else if hasSuperClass {
-                // Class with a non-BaseViewModel superclass (e.g. NSObject).
-                // Set our own stored properties first (Phase 1), then delegate to super,
-                // then perform Phase-2 customisation (bind).
-                results.append("""
-                    \(raw: space(baseAccess))init(state: State) {
-                        self.state = state
-                        super.init()
-                        bind()
-                    }
-                    """)
-                results.append("""
-                    \(raw: space(baseAccess))init() {
-                        self.state = State()
-                        super.init()
-                        bind()
-                    }
-                    """)
-            } else {
-                // Root class — no super.init() needed.
-                results.append("""
-                    \(raw: space(baseAccess))init(state: State) {
-                        self.state = state
-                        bind()
-                    }
-                    """)
-                results.append("""
-                    \(raw: space(baseAccess))init() {
-                        self.state = State()
-                        bind()
-                    }
-                    """)
-            }
-        }
+        // Always generate inits
+        results.append("\(raw: space(baseAccess))init(state: State) { self.state = state; bind() }")
+        results.append("\(raw: space(baseAccess))init() { self.state = State(); bind() }")
 
         if !inheritsFromBase {
             results.append("""
@@ -240,10 +183,14 @@ public struct BaseViewModelMacro: MemberMacro, ExtensionMacro, MemberAttributeMa
             conformances += ", SwiftUI.ObservableObject"
         }
 
-        // The id stored property is generated in MemberMacro so the extension body is empty.
+        let classHasMainActor = declaration.attributes.contains { attr in
+            attr.as(AttributeSyntax.self)?.attributeName.trimmedDescription == "MainActor"
+        }
+        let mainActorAttr = classHasMainActor ? "" : "@MainActor\n"
+
         let extensionDecl: DeclSyntax =
             """
-            extension \(raw: type.trimmedDescription): \(raw: conformances) {}
+            \(raw: mainActorAttr)extension \(raw: type.trimmedDescription): \(raw: conformances) {}
             """
 
         guard let extensionDecl = extensionDecl.as(ExtensionDeclSyntax.self) else {
